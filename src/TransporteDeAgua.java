@@ -1301,6 +1301,8 @@ public class TransporteDeAgua {
         DiccionarioAVL ciudadesAgua = new DiccionarioAVL();
         Double cantAguaCiudad = 0.0;
         Ciudad ciudadX = null;
+        String clave = "";
+        
         // Solicita año y valida
         do {
             System.out.println("Ingrese el año que desea obtener el listado de consumos de agua");
@@ -1317,6 +1319,7 @@ public class TransporteDeAgua {
             ciudadX = (Ciudad) ciudades.recuperar(cont);
             cantAguaCiudad = ciudadX.calcularPromedioVolumenAnio(anio);
             if (cantAguaCiudad != 0) {
+                clave = String.format("%012.3f", cantAguaCiudad) + "_" + ciudadX.getNombre();
                 ciudadesAgua.insertar(cantAguaCiudad, ciudadX.getNombre());
             }
             cont++;

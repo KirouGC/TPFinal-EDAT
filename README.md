@@ -1,4 +1,4 @@
 # AUTORES #
-Aguirre, Leandro Nicolás
-Font, Agustín
-Ramos Montiel, Dante
+Aguirre, Leandro Nicolás <br>
+Font, Agustín <br>
+Ramos Montiel, Dante <br>

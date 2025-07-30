@@ -1,7 +1,6 @@
 package main;
 
 import clases.lineales.dinamicas.Lista;
-
 public class DiccionarioAVL {
 
     private NodoAVLDicc raiz;
@@ -10,278 +9,189 @@ public class DiccionarioAVL {
         this.raiz = null;
     }
 
-    public boolean insertar(Comparable elem, Object dato) {
-        boolean exito = false;
+    public boolean insertar(Comparable clave, Object dato) {
+        boolean[] exito = { false };
         if (this.raiz == null) {
-            this.raiz = new NodoAVLDicc(elem, dato, null, null);
-            this.raiz.setAltura(0);
-            exito = true;
+            this.raiz = new NodoAVLDicc(clave, dato);
+            exito[0] = true;
         } else {
-            exito = insertarAux(this.raiz, null, elem, dato);
+            this.raiz = insertarRec(this.raiz, clave, dato, exito);
         }
-        return exito;
+        return exito[0];
     }
 
-    private boolean insertarAux(NodoAVLDicc nodoActual, NodoAVLDicc nodoPadre, Comparable elem, Object dato) {
-        boolean exito = false;
-        if (nodoActual != null) {
-            if (elem.compareTo(nodoActual.getClave()) == 0) {
-                exito = false;
-            } else if (elem.compareTo(nodoActual.getClave()) > 0) {
-                if (nodoActual.getDerecho() == null) {
-                    NodoAVLDicc nodoAux = new NodoAVLDicc(elem, dato, null, null);
-                    nodoAux.setAltura(0);
-                    nodoActual.setDerecho(nodoAux);
-                    exito = true;
-                } else {
-                    exito = insertarAux(nodoActual.getDerecho(), nodoActual, elem, dato);
-                }
-            } else {
-                if (nodoActual.getIzquierdo() == null) {
-                    NodoAVLDicc nodoAux = new NodoAVLDicc(elem, dato, null, null);
-                    nodoAux.setAltura(0);
-                    nodoActual.setIzquierdo(nodoAux);
-                    exito = true;
-                } else {
-                    exito = insertarAux(nodoActual.getIzquierdo(), nodoActual, elem, dato);
-                }
-            }
-            if (nodoActual.getIzquierdo() != null || nodoActual.getDerecho() != null) {
-                nodoActual.recalcularAltura();
-                verificarRotacion(nodoActual, nodoPadre);
-            }
-        }
-        return exito;
-    }
-
-    public boolean existeClave(Comparable clave) {
-        return existeClaveAux(this.raiz, clave);
-    }
-
-    private boolean existeClaveAux(NodoAVLDicc nodo, Comparable clave) {
-        boolean resultado = false;
-        if (nodo != null) {
-            int comp = clave.compareTo(nodo.getClave());
-            if (comp == 0) {
-                resultado = true;
-            } else if (comp < 0) {
-                resultado = existeClaveAux(nodo.getIzquierdo(), clave);
-            } else {
-                resultado = existeClaveAux(nodo.getDerecho(), clave);
-            }
-        }
-        return resultado;
-    }
-
-    public Object obtenerDato(Comparable clave) {
-        return obtenerDatoAux(this.raiz, clave);
-    }
-
-    private Object obtenerDatoAux(NodoAVLDicc nodo, Comparable clave) {
-        Object resultado = null;
-        if (nodo != null) {
-            int comp = clave.compareTo(nodo.getClave());
-            if (comp == 0) {
-                resultado = nodo.getDato();
-            } else if (comp < 0) {
-                resultado = obtenerDatoAux(nodo.getIzquierdo(), clave);
-            } else {
-                resultado = obtenerDatoAux(nodo.getDerecho(), clave);
-            }
-        }
-        return resultado;
-    }
-
-    public Lista listarClaves() {
-        Lista l = new Lista();
-        listarClavesAux(this.raiz, l);
-        return l;
-    }
-
-    private void listarClavesAux(NodoAVLDicc nodo, Lista l) {
-        if (nodo != null) {
-            listarClavesAux(nodo.getIzquierdo(), l);
-            l.insertar(nodo.getClave(), l.longitud() + 1);
-            listarClavesAux(nodo.getDerecho(), l);
-        }
-    }
-
-    public Lista listarDatos() {
-        Lista l = new Lista();
-        listarDatosAux(this.raiz, l);
-        return l;
-    }
-
-    private void listarDatosAux(NodoAVLDicc nodo, Lista l) {
-        if (nodo != null) {
-            listarDatosAux(nodo.getIzquierdo(), l);
-            l.insertar(nodo.getDato(), l.longitud() + 1);
-            listarDatosAux(nodo.getDerecho(), l);
-        }
-    }
-
-    public boolean eliminar(Comparable elem) {
-        boolean exito = eliminarAux(this.raiz, null, elem);
-        return exito;
-    }
-
-    private boolean eliminarAux(NodoAVLDicc nodoActual, NodoAVLDicc padre, Comparable elem) {
-        boolean exito = false;
-        if (nodoActual != null) {
-            if (elem.compareTo(nodoActual.getClave()) == 0) {
-                if (nodoActual.getIzquierdo() == null && nodoActual.getDerecho() == null) {
-                    eliminarCasoHoja(nodoActual, padre);
-                    exito = true;
-                } else {
-                    if ((nodoActual.getIzquierdo() != null && nodoActual.getDerecho() == null)
-                            || (nodoActual.getIzquierdo() == null && nodoActual.getDerecho() != null)) {
-                        eliminarCaso1Hijo(nodoActual, padre);
-                        exito = true;
+    private NodoAVLDicc insertarRec(NodoAVLDicc n, Comparable clave, Object dato, boolean[] exito) {
+        int comparar;
+        if (n != null) {
+            comparar = clave.compareTo(n.getClave());
+            if (comparar != 0) {
+                if (comparar < 0) {
+                    if (n.getIzquierdo() != null) {
+                        n.setIzquierdo(insertarRec(n.getIzquierdo(), clave, dato, exito));
                     } else {
-                        eliminarCaso2Hijos(nodoActual);
-                        exito = true;
+                        n.setIzquierdo(new NodoAVLDicc(clave, dato, null, null));
+                        exito[0] = true;
+                    }
+                } else {
+                    if (n.getDerecho() != null) {
+                        n.setDerecho(insertarRec(n.getDerecho(), clave, dato, exito));
+                    } else {
+                        n.setDerecho(new NodoAVLDicc(clave, dato));
+                        exito[0] = true;
                     }
                 }
-            } else if (elem.compareTo(nodoActual.getClave()) < 0) {
-                exito = eliminarAux(nodoActual.getIzquierdo(), nodoActual, elem);
-            } else {
-                exito = eliminarAux(nodoActual.getDerecho(), nodoActual, elem);
-            }
-            if (nodoActual.getIzquierdo() != null || nodoActual.getDerecho() != null) {
-                nodoActual.recalcularAltura();
-                verificarRotacion(nodoActual, padre);
             }
         }
-        return exito;
-    }
-
-    private void eliminarCasoHoja(NodoAVLDicc nodoActual, NodoAVLDicc padre) {
-        if (padre != null) {
-            if (padre.getIzquierdo() == nodoActual) {
-                padre.setIzquierdo(null);
-            } else {
-                padre.setDerecho(null);
-            }
-        } else {
-            this.raiz = null;
-        }
-    }
-
-    private void eliminarCaso1Hijo(NodoAVLDicc nodoActual, NodoAVLDicc padre) {
-        if (padre != null) {
-            if (nodoActual.getIzquierdo() != null) {
-                padre.setIzquierdo(nodoActual.getIzquierdo());
-            } else {
-                padre.setDerecho(nodoActual.getDerecho());
-            }
-        } else {
-            if (nodoActual.getIzquierdo() != null) {
-                this.raiz = nodoActual.getIzquierdo();
-            } else {
-                this.raiz = nodoActual.getDerecho();
-            }
-        }
-    }
-
-    private void eliminarCaso2Hijos(NodoAVLDicc nodoActual) {
-        if (nodoActual.getIzquierdo().getDerecho() != null) {
-            NodoAVLDicc nodoMenor = obtenerMenorEliminarAux(nodoActual.getIzquierdo(), nodoActual);
-            nodoActual.setClave(nodoMenor.getDerecho().getClave());
-            nodoActual.setDato(nodoMenor.getDerecho().getDato());
-            nodoMenor.setDerecho(nodoMenor.getDerecho().getIzquierdo());
-        } else {
-            nodoActual.setClave(nodoActual.getIzquierdo().getClave());
-            nodoActual.setDato(nodoActual.getIzquierdo().getDato());
-            nodoActual.setIzquierdo(nodoActual.getIzquierdo().getIzquierdo());
-        }
-
-    }
-
-    private void verificarRotacion(NodoAVLDicc nodoActual, NodoAVLDicc nodoPadre) {
-        int balanceActual = 0;
-        int balanceHijo = 0;
-        NodoAVLDicc nodoRotacion = null;
-        balanceActual = calcularBalance(nodoActual);
-        if (balanceActual < -1) {
-            balanceHijo = calcularBalance(nodoActual.getDerecho());
-            if (balanceHijo > 0) {
-                nodoRotacion = rotarDerecha(nodoActual.getDerecho());
-                nodoActual.setDerecho(nodoRotacion);
-                nodoActual.getDerecho().recalcularAltura();
-                nodoActual.recalcularAltura();
-            }
-            nodoRotacion = rotarIzquierda(nodoActual);
-            if (nodoPadre != null) {
-                if (nodoPadre.getIzquierdo() == nodoActual) {
-                    nodoPadre.setIzquierdo(nodoRotacion);
-                } else {
-                    nodoPadre.setDerecho(nodoRotacion);
+        if (exito[0]) {
+            n.recalcularAltura();
+            int balance = calcularBalance(n);
+            if (balance > 1) {
+                int balanceHijo = calcularBalance(n.getIzquierdo());
+                if (balanceHijo < 0) {
+                    n.setIzquierdo(balancearDer(n.getIzquierdo()));
                 }
-            } else {
-                this.raiz = nodoRotacion;
+                n = balancearIzq(n);
             }
-        } else if (balanceActual > 1) {
-            balanceHijo = calcularBalance(nodoActual.getIzquierdo());
-            if (balanceHijo < 0) {
-                nodoRotacion = rotarIzquierda(nodoActual.getIzquierdo());
-                nodoActual.setIzquierdo(nodoRotacion);
-                nodoActual.getIzquierdo().recalcularAltura();
-                nodoActual.recalcularAltura();
-            }
-            nodoRotacion = rotarDerecha(nodoActual);
-            if (nodoPadre != null) {
-                if (nodoPadre.getDerecho() == nodoActual) {
-                    nodoPadre.setDerecho(nodoRotacion);
-                } else {
-                    nodoPadre.setIzquierdo(nodoRotacion);
+            if (balance < -1) {
+                int balanceHijo = calcularBalance(n.getDerecho());
+                if (balanceHijo > 0) {
+                    n.setDerecho(balancearIzq(n.getDerecho()));
                 }
-            } else {
-                this.raiz = nodoRotacion;
+                n = balancearDer(n);
             }
         }
-        nodoActual.recalcularAltura();
+        return n;
     }
 
-    private int calcularBalance(NodoAVLDicc nodo) {
-        int balance = 0;
-        int izq = -1;
-        int der = -1;
-        if (nodo.getIzquierdo() != null) {
-            izq = nodo.getIzquierdo().getAltura();
-        }
-        if (nodo.getDerecho() != null) {
-            der = nodo.getDerecho().getAltura();
-        }
-        balance = izq - der;
+    private NodoAVLDicc balancearIzq(NodoAVLDicc r) {
+        NodoAVLDicc h = r.getIzquierdo();
+        NodoAVLDicc temp = h.getDerecho();
+        h.setDerecho(r);
+        r.setIzquierdo(temp);
+        r.recalcularAltura();
+        h.recalcularAltura();
+        return h;
+    }
+
+    private NodoAVLDicc balancearDer(NodoAVLDicc r) {
+        NodoAVLDicc h = r.getDerecho();
+        NodoAVLDicc temp = h.getIzquierdo();
+        h.setIzquierdo(r);
+        r.setDerecho(temp);
+        r.recalcularAltura();
+        h.recalcularAltura();
+        return h;
+    }
+
+    private int calcularBalance(NodoAVLDicc n) {
+        int altDer = (n.getDerecho() != null) ? n.getDerecho().getAltura() : -1;
+        int altIzq = (n.getIzquierdo() != null) ? n.getIzquierdo().getAltura() : -1;
+        int balance = altIzq - altDer;
         return balance;
     }
 
-    private NodoAVLDicc rotarDerecha(NodoAVLDicc nodoActual) {
-        NodoAVLDicc h = nodoActual.getIzquierdo();
-        NodoAVLDicc temp = h.getDerecho();
-        h.setDerecho(nodoActual);
-        nodoActual.setIzquierdo(temp);
-        return h; // retorna la nueva subraiz del arbol
+    public boolean vacio() {
+        boolean esVacio = false;
+        if (this.raiz == null) {
+            esVacio = true;
+        }
+        return esVacio;
     }
 
-    private NodoAVLDicc rotarIzquierda(NodoAVLDicc nodoActual) {
-        NodoAVLDicc h = nodoActual.getDerecho();
-        NodoAVLDicc temp = h.getIzquierdo();
-        h.setIzquierdo(nodoActual);
-        nodoActual.setDerecho(temp);
-        return h; // retorna la nueva subraiz del arbol
+    public boolean eliminar(Comparable elem) {
+        boolean[] exito = { false };
+        if (!this.vacio()) {
+            this.raiz = eliminarRec(this.raiz, elem, exito);
+        }
+        return exito[0];
     }
 
-    private NodoAVLDicc obtenerMenorEliminarAux(NodoAVLDicc nodoActual, NodoAVLDicc padre) {
-        NodoAVLDicc padreElemento = null;
-        if (nodoActual != null) {
-            if (nodoActual.getDerecho() != null) {
-                padreElemento = obtenerMenorEliminarAux(nodoActual.getDerecho(), nodoActual);
+    private NodoAVLDicc eliminarRec(NodoAVLDicc n, Comparable elem, boolean[] exito) {
+        NodoAVLDicc eliminado = n;
+        int comparar;
+        if (n != null) {
+            comparar = elem.compareTo(n.getClave());
+            if (comparar == 0) {
+                if (n.getDerecho() == null && n.getIzquierdo() == null) {
+                    eliminado = null;
+                } else if (n.getIzquierdo() != null && n.getDerecho() == null) {
+                    eliminado = n.getIzquierdo();
+                } else if (n.getIzquierdo() == null && n.getDerecho() != null) {
+                    eliminado = n.getDerecho();
+                } else if (n.getIzquierdo() != null && n.getDerecho() != null) {
+                    // Buscar el mayor del subárbol izquierdo (predecesor)
+                    NodoAVLDicc mayor = buscarMayorNodo(n.getIzquierdo());
+                    n.setClave(mayor.getClave());
+                    n.setDato(mayor.getDato());
+                    n.setIzquierdo(eliminarRec(n.getIzquierdo(), mayor.getClave(), exito));
+                    eliminado = n;
+                }
+                exito[0] = true;
             } else {
-                padreElemento = padre;
+                if (comparar < 0) {
+                    n.setIzquierdo(eliminarRec(n.getIzquierdo(), elem, exito));
+                } else {
+                    n.setDerecho(eliminarRec(n.getDerecho(), elem, exito));
+                }
             }
         }
-        return padreElemento;
+        if (exito[0] && eliminado != null) {
+            eliminado.recalcularAltura();
+            int balance = calcularBalance(eliminado);
+            if (balance > 1) {
+                int balanceHijo = calcularBalance(eliminado.getIzquierdo());
+                if (balanceHijo < 0) {
+                    eliminado.setIzquierdo(balancearDer(eliminado.getIzquierdo()));
+                }
+                eliminado = balancearIzq(eliminado);
+            }
+            if (balance < -1) {
+                int balanceHijo = calcularBalance(eliminado.getDerecho());
+                if (balanceHijo > 0) {
+                    eliminado.setDerecho(balancearIzq(eliminado.getDerecho()));
+                }
+                eliminado = balancearDer(eliminado);
+            }
+        }
+        return eliminado;
+    }
+
+    private NodoAVLDicc buscarMayorNodo(NodoAVLDicc n) {
+        if (n != null) {
+            while (n.getDerecho() != null) {
+                n = n.getDerecho();
+            }
+        }
+        return n;
+    }
+
+    private NodoAVLDicc buscarMenorNodo(NodoAVLDicc n) {
+        if (n != null) {
+            while (n.getIzquierdo() != null) {
+                n = n.getIzquierdo();
+            }
+        }
+        return n;
+    }
+
+    public Comparable minimoClave() {
+        NodoAVLDicc nodo = buscarMenorNodo(this.raiz);
+        return (nodo != null) ? nodo.getClave() : null;
+    }
+
+    public Object minimoDato() {
+        NodoAVLDicc nodo = buscarMenorNodo(this.raiz);
+        return (nodo != null) ? nodo.getDato() : null;
+    }
+
+    public Comparable maximoClave() {
+        NodoAVLDicc nodo = buscarMayorNodo(this.raiz);
+        return (nodo != null) ? nodo.getClave() : null;
+    }
+
+    public Object maximoDato() {
+        NodoAVLDicc nodo = buscarMayorNodo(this.raiz);
+        return (nodo != null) ? nodo.getDato() : null;
     }
 
     public String toString() {
@@ -299,15 +209,15 @@ public class DiccionarioAVL {
                 string += " / Hijo Derecho: null";
             }
 
-            string += StringArbol(raiz.getIzquierdo());
-            string += StringArbol(raiz.getDerecho());
+            string += stringArbol(raiz.getIzquierdo());
+            string += stringArbol(raiz.getDerecho());
         } else {
             string = "Árbol vacío.";
         }
         return string;
     }
 
-    private String StringArbol(NodoAVLDicc n) {
+    private String stringArbol(NodoAVLDicc n) {
         String s = "";
         if (n != null) {
             s = "\n Nodo: " + n.getClave();
@@ -322,9 +232,129 @@ public class DiccionarioAVL {
                 s += " / Hijo Derecho: null";
             }
 
-            s += StringArbol(n.getIzquierdo());
-            s += StringArbol(n.getDerecho());
+            s += stringArbol(n.getIzquierdo());
+            s += stringArbol(n.getDerecho());
         }
         return s;
+    }
+
+    public Lista listarRango(Object elemMinimo, Object elemMaximo) {
+        Lista listaRango = new Lista();
+        int comparacion = ((Comparable) elemMinimo).compareTo((Comparable) elemMaximo);
+        if (comparacion < 0) {
+            listarRangoRec(listaRango, this.raiz, (Comparable) elemMinimo, (Comparable) elemMaximo);
+        }
+        return listaRango;
+    }
+
+    private void listarRangoRec(Lista l, NodoAVLDicc n, Comparable min, Comparable max) {
+        if (n != null) {
+            Comparable compararElem = (Comparable) n.getClave();
+            int comparacionMin = compararElem.compareTo(min);
+            int comparacionMax = compararElem.compareTo(max);
+            if (comparacionMin >= 0 && comparacionMax <= 0) {
+                l.insertar(n.getDato(), l.longitud() + 1);
+            }
+            if (comparacionMin > 0) {
+                listarRangoRec(l, n.getIzquierdo(), min, max);
+            }
+            if (comparacionMax < 0) {
+                listarRangoRec(l, n.getDerecho(), min, max);
+            }
+        }
+    }
+
+    public boolean pertenece(Object elem) {
+        return perteneceRecursivo(this.raiz, (Comparable) elem);
+    }
+
+    private boolean perteneceRecursivo(NodoAVLDicc nodoActual, Comparable elem) {
+        boolean pertenece = false;
+        int comparacion;
+        if (nodoActual != null) {
+            comparacion = elem.compareTo(nodoActual.getClave());
+            if (comparacion == 0) {
+                pertenece = true;
+            } else {
+                if (comparacion < 0) {
+                    pertenece = perteneceRecursivo(nodoActual.getIzquierdo(), elem);
+                } else {
+                    pertenece = perteneceRecursivo(nodoActual.getDerecho(), elem);
+                }
+            }
+        }
+        return pertenece;
+    }
+
+    public Object obtenerDato(Object clave) {
+        return obtenerDatoAux(this.raiz, (Comparable) clave);
+    }
+
+    private Object obtenerDatoAux(NodoAVLDicc nodoActual, Comparable clave) {
+        Object dato = null;
+        int comparacion;
+        if (nodoActual != null) {
+            comparacion = clave.compareTo(nodoActual.getClave());
+            if (comparacion == 0) {
+                dato = nodoActual.getDato();
+            } else {
+                if (comparacion < 0) {
+                    dato = obtenerDatoAux(nodoActual.getIzquierdo(), clave);
+                } else {
+                    dato = obtenerDatoAux(nodoActual.getDerecho(), clave);
+                }
+            }
+        }
+        return dato;
+    }
+
+    public boolean existeClave(Object clave) {
+        return existeClaveAux(this.raiz, (Comparable) clave);
+    }
+
+    private boolean existeClaveAux(NodoAVLDicc nodoActual, Comparable clave) {
+        boolean existe = false;
+        int comparacion;
+        if (nodoActual != null) {
+            comparacion = clave.compareTo(nodoActual.getClave());
+            if (comparacion == 0) {
+                existe = true;
+            } else {
+                if (comparacion < 0) {
+                    existe = existeClaveAux(nodoActual.getIzquierdo(), clave);
+                } else {
+                    existe = existeClaveAux(nodoActual.getDerecho(), clave);
+                }
+            }
+        }
+        return existe;
+    }
+
+    public Lista listarClaves() {
+        Lista arbolPreOrden = new Lista();
+        listarClavesAux(arbolPreOrden, this.raiz);
+        return arbolPreOrden;
+    }
+
+    private void listarClavesAux(Lista lista, NodoAVLDicc padre) {
+        if (padre != null) {
+            lista.insertar(padre.getClave(), lista.longitud() + 1);
+            listarClavesAux(lista, padre.getIzquierdo());
+            listarClavesAux(lista, padre.getDerecho());
+        }
+    }
+
+    public Lista listarDatos() {
+        Lista arbolPreOrden = new Lista();
+        listarDatosAux(arbolPreOrden, this.raiz);
+        return arbolPreOrden;
+    }
+
+    private void listarDatosAux(Lista lista, NodoAVLDicc padre) {
+        if (padre != null) {
+            lista.insertar(padre.getDato(), lista.longitud() + 1);
+            listarDatosAux(lista, padre.getIzquierdo());
+            listarDatosAux(lista, padre.getDerecho());
+        }
     }
 }

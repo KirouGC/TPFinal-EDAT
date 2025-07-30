@@ -1,14 +1,14 @@
 import clases.grafos.Grafo;
+import clases.lineales.dinamicas.Lista;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-import clases.lineales.dinamicas.Lista;
 import main.Ciudad;
 import main.DiccionarioAVL;
-import main.Tuberia;
 import main.Dom;
+import main.Tuberia;
 
 public class TransporteDeAgua {
 
@@ -1302,7 +1302,7 @@ public class TransporteDeAgua {
         Double cantAguaCiudad = 0.0;
         Ciudad ciudadX = null;
         String clave = "";
-        
+
         // Solicita año y valida
         do {
             System.out.println("Ingrese el año que desea obtener el listado de consumos de agua");

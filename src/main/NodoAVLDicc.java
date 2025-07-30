@@ -15,6 +15,12 @@ public class NodoAVLDicc {
         this.altura = 0;
     }
 
+    public NodoAVLDicc(Comparable clave, Object dato) {
+        this.clave = clave;
+        this.dato = dato;
+        this.altura = 0;
+    }
+
     public Comparable getClave() {
         return this.clave;
     }

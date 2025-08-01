@@ -226,15 +226,6 @@ public class Grafo {
     }
 
     private boolean pertenece(Lista lista, Object elem) {
-        // int i = 1;
-        // boolean encontrado = false;
-        // while (i <= lista.longitud() && !encontrado) {
-        //     if (lista.recuperar(i).equals(elem)) {
-        //         encontrado = true;
-        //     } else {
-        //         i++;
-        //     }
-        // }
         return lista.localizar(elem) != -1;
     }
 

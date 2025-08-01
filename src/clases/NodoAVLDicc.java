@@ -1,4 +1,4 @@
-package main;
+package clases;
 
 public class NodoAVLDicc {
     private Comparable clave;

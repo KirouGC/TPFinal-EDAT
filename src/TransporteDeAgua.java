@@ -1,3 +1,4 @@
+import clases.DiccionarioAVL;
 import clases.grafos.Grafo;
 import clases.lineales.dinamicas.Lista;
 import java.io.BufferedReader;
@@ -6,7 +7,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import main.Ciudad;
-import main.DiccionarioAVL;
 import main.Dom;
 import main.Tuberia;
 

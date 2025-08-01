@@ -1,4 +1,4 @@
-package main;
+package clases;
 
 import clases.lineales.dinamicas.Lista;
 public class DiccionarioAVL {

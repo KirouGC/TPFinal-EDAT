@@ -235,7 +235,7 @@ public class Grafo {
         //         i++;
         //     }
         // }
-        return lista.localizar(elem) == -1;
+        return lista.localizar(elem) != -1;
     }
 
     public Lista caminoMasCorto(Object origen, Object destino) {

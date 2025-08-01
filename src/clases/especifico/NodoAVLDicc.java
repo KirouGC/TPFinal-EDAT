@@ -66,7 +66,6 @@ public class NodoAVLDicc {
     }
 
     private int alturaNodo(NodoAVLDicc n) {
-        System.out.println("calculando Altura");
         int izq = 0;
         int der = 0;
         int altura = 0;

@@ -44,7 +44,7 @@ public class TransporteDeAgua {
             // for (int i = 0; i < listaTest.longitud(); i++) {
             //     System.out.println(((Ciudad) listaTest.recuperar(i+1)).getNombre());
             // }
-            System.out.println(arbolCiudades.eliminar("RIO GALLEGOS"));
+            // System.out.println(arbolCiudades.eliminar("RIO GALLEGOS"));
             
         
 

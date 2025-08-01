@@ -60,9 +60,9 @@ public class Grafo {
             while (ultimo.getSigAdyacente() != null && !ultimo.getEtiqueta().equals(etiqueta)) {
                 ultimo = ultimo.getSigAdyacente();
             }
-            if (ultimo.getEtiqueta().equals(etiqueta)) {
-                ultimo = null;
-            }
+            // if (ultimo.getEtiqueta().equals(etiqueta)) { // Si se descomenta, NO PERMITE ETIQUETAS DE ARCOS REPETIDOS
+            //     ultimo = null;
+            // }
         }
         return ultimo;
     }
@@ -243,8 +243,9 @@ public class Grafo {
     }
 
     private void caminoMasCortoAux(NodoVert actual, Object destino, Lista visitados, Lista mejorCamino) {
+        System.out.println("chau");
         visitados.insertar(actual.getElem(), visitados.longitud() + 1);
-
+        
         if (actual.getElem().equals(destino)) {
             if (mejorCamino.longitud() == 0 || visitados.longitud() < mejorCamino.longitud()) {
                 copiarLista(visitados, mejorCamino);

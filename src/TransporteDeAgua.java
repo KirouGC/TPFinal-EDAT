@@ -1,4 +1,4 @@
-import clases.DiccionarioAVL;
+import clases.especifico.DiccionarioAVL;
 import clases.grafos.Grafo;
 import clases.lineales.dinamicas.Lista;
 import java.io.BufferedReader;
@@ -38,6 +38,19 @@ public class TransporteDeAgua {
             while (((linea = bufferLecTuberia.readLine()) != null)) {
                 cargarTuberia(linea, mapa, hashTuberias, arbolCiudades);
             }
+
+            // TESTING 
+            // Lista listaTest = arbolCiudades.listarRango("OOOO", "TTTT");
+            // for (int i = 0; i < listaTest.longitud(); i++) {
+            //     System.out.println(((Ciudad) listaTest.recuperar(i+1)).getNombre());
+            // }
+            System.out.println(arbolCiudades.eliminar("RIO GALLEGOS"));
+            
+        
+
+            // FIN TESTING
+
+
             // Bucle principal del menú
             boolean volverMenu = false;
             do {
@@ -169,7 +182,6 @@ public class TransporteDeAgua {
         } while (!eleccion.equals("4"));
     }
 
-    // Agrega una nueva ciudad al sistema
     public static void agregarCiudad(Grafo mapa, DiccionarioAVL arbol) {
         Scanner sc = new Scanner(System.in);
         String nombre = "";
@@ -214,7 +226,7 @@ public class TransporteDeAgua {
                     }
                     // Se crea y agrega la ciudad a las estructuras
                     Ciudad nuevaCiudad = new Ciudad(nombre, nomenclatura, Double.parseDouble(superficie),
-                            Double.parseDouble(promedio));
+                    Double.parseDouble(promedio));
                     nuevaCiudad.insertarDatosAnio(habitantes);
                     mapa.insertarVertice(nuevaCiudad.getNomenclatura());
                     arbol.insertar(nombre, nuevaCiudad);
@@ -226,7 +238,7 @@ public class TransporteDeAgua {
                 System.out.println("Error: formato incorrecto.");
             }
         } else {
-            System.out.println("Error: el nombre ingresado es inválido.");
+            System.out.println("Error: el nombre ingresado está repetido o es inválido.");
         }
         System.out.println("----------------------------------");
     }
@@ -236,14 +248,18 @@ public class TransporteDeAgua {
         boolean valido = false;
         int i = 0;
         char act = ' ';
-        if (n != null && n.length() >= 2) {
-            valido = true;
-            while (i < n.length() && valido) {
-                act = n.charAt(i);
-                if (!(Character.isLetterOrDigit(act)) && !(act == ' ')) {
-                    valido = false;
+        if (n != null) {
+            if (arbol.pertenece(n)) {
+                valido = false;
+            } else if (n.length() >= 2) {
+                valido = true;
+                while (i < n.length() && valido) {
+                    act = n.charAt(i);
+                    if (!(Character.isLetterOrDigit(act)) && !(act == ' ')) {
+                        valido = false;
+                    }
+                    i++;
                 }
-                i++;
             }
         }
         return valido;

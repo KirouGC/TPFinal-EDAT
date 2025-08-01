@@ -1,6 +1,7 @@
-package clases;
+package clases.especifico;
 
 import clases.lineales.dinamicas.Lista;
+
 public class DiccionarioAVL {
 
     private NodoAVLDicc raiz;
@@ -208,7 +209,7 @@ public class DiccionarioAVL {
             } else {
                 string += " / Hijo Derecho: null";
             }
-
+            string += " / Altura del Nodo: " + raiz.getAltura();
             string += stringArbol(raiz.getIzquierdo());
             string += stringArbol(raiz.getDerecho());
         } else {
@@ -231,41 +232,46 @@ public class DiccionarioAVL {
             } else {
                 s += " / Hijo Derecho: null";
             }
-
+            s += " / Altura del Nodo: " + n.getAltura();
             s += stringArbol(n.getIzquierdo());
             s += stringArbol(n.getDerecho());
         }
         return s;
     }
 
-    public Lista listarRango(Object elemMinimo, Object elemMaximo) {
+    public Lista listarRango(Comparable elemMinimo, Comparable elemMaximo) {
         Lista listaRango = new Lista();
-        int comparacion = ((Comparable) elemMinimo).compareTo((Comparable) elemMaximo);
+        int comparacion = (elemMinimo).compareTo(elemMaximo);
         if (comparacion < 0) {
-            listarRangoRec(listaRango, this.raiz, (Comparable) elemMinimo, (Comparable) elemMaximo);
+            System.out.println("entre");
+            listarRangoRec(listaRango, this.raiz, elemMinimo, elemMaximo);
         }
+        System.out.println("fin");
         return listaRango;
     }
 
     private void listarRangoRec(Lista l, NodoAVLDicc n, Comparable min, Comparable max) {
         if (n != null) {
-            Comparable compararElem = (Comparable) n.getClave();
+            Comparable compararElem = n.getClave();
             int comparacionMin = compararElem.compareTo(min);
             int comparacionMax = compararElem.compareTo(max);
-            if (comparacionMin >= 0 && comparacionMax <= 0) {
-                l.insertar(n.getDato(), l.longitud() + 1);
-            }
-            if (comparacionMin > 0) {
+            System.out.println("Valor comparacionMin en nodo:" + n.getClave() + " = " + comparacionMin);
+            System.out.println("Valor comparacionMax en nodo:" + n.getClave() + " = " + comparacionMax);
+            if (n.getIzquierdo() != null && comparacionMin >= 0) {
                 listarRangoRec(l, n.getIzquierdo(), min, max);
             }
-            if (comparacionMax < 0) {
+            if (comparacionMin >= 0 && comparacionMax <= 0) {
+                System.out.println("insertado");
+                l.insertar(n.getDato(), l.longitud() + 1);
+            }
+            if (n.getDerecho() != null && comparacionMax <= 0) {
                 listarRangoRec(l, n.getDerecho(), min, max);
             }
         }
     }
 
-    public boolean pertenece(Object elem) {
-        return perteneceRecursivo(this.raiz, (Comparable) elem);
+    public boolean pertenece(Comparable elem) {
+        return perteneceRecursivo(this.raiz, elem);
     }
 
     private boolean perteneceRecursivo(NodoAVLDicc nodoActual, Comparable elem) {

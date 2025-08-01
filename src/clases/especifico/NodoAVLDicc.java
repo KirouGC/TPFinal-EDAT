@@ -1,4 +1,4 @@
-package clases;
+package clases.especifico;
 
 public class NodoAVLDicc {
     private Comparable clave;
@@ -66,15 +66,16 @@ public class NodoAVLDicc {
     }
 
     private int alturaNodo(NodoAVLDicc n) {
+        System.out.println("calculando Altura");
         int izq = 0;
         int der = 0;
         int altura = 0;
         if (n != null) {
             if (n.getIzquierdo() != null) {
-                izq = 1 + alturaNodo(n.getIzquierdo());
+                izq = 1 + n.getIzquierdo().getAltura();
             }
             if (n.getDerecho() != null) {
-                der = 1 + alturaNodo(n.getDerecho());
+                der = 1 + n.getDerecho().getAltura();
             }
             if (izq != 0 || der != 0) {
                 if (izq >= der) {

@@ -122,7 +122,7 @@ public class TransporteDeAgua {
     // Muestra el menú principal
     public static void menu() {
         System.out.println("----------------------------------");
-        System.out.println("***MENU NIGGER EPICO DEL TP DE EDAT 2025 CHATGPT :V***");
+        System.out.println("***MENU EPICO DEL TP DE EDAT 2025***");
         System.out.println("Opciones:");
         System.out.println("1. Altas, bajas y modificaciones de ciudades");
         System.out.println("2. Altas, bajas y modificaciones de tuberias");

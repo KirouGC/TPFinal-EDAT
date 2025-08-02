@@ -1050,7 +1050,7 @@ public class TransporteDeAgua {
             // Muestra el menú de consultas sobre ciudades
             System.out.println("----------------------------------");
             System.out.println("Desea ajustar solo los habitantes de un mes especifico? Y/N");
-            eleccion = sc.nextLine();
+            eleccion = sc.nextLine().toUpperCase();
 
             switch (eleccion) {
                 case "Y":

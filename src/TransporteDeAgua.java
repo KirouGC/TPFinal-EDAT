@@ -39,17 +39,14 @@ public class TransporteDeAgua {
                 cargarTuberia(linea, mapa, hashTuberias, arbolCiudades);
             }
 
-            // TESTING 
+            // TESTING
             // Lista listaTest = arbolCiudades.listarRango("OOOO", "TTTT");
             // for (int i = 0; i < listaTest.longitud(); i++) {
-            //     System.out.println(((Ciudad) listaTest.recuperar(i+1)).getNombre());
+            // System.out.println(((Ciudad) listaTest.recuperar(i+1)).getNombre());
             // }
             // System.out.println(arbolCiudades.eliminar("RIO GALLEGOS"));
-            
-        
 
             // FIN TESTING
-
 
             // Bucle principal del menú
             boolean volverMenu = false;
@@ -103,7 +100,8 @@ public class TransporteDeAgua {
         Ciudad nuevaCiudad = new Ciudad(datos[0], datos[1], Double.parseDouble(datos[2]), Double.parseDouble(datos[3]));
         mapa.insertarVertice(datos[1]);
         arbolCiudades.insertar(nuevaCiudad.getNombre(), nuevaCiudad);
-        String rutaHabitantes = System.getProperty("user.dir") + "\\textos\\datosHabitantes\\" + nuevaCiudad.getNombre().toUpperCase() + ".txt";
+        String rutaHabitantes = System.getProperty("user.dir") + "\\textos\\datosHabitantes\\"
+                + nuevaCiudad.getNombre().toUpperCase() + ".txt";
         cargarHabitantesDesdeArchivo(rutaHabitantes, nuevaCiudad);
     }
 
@@ -225,7 +223,7 @@ public class TransporteDeAgua {
                     }
                     // Se crea y agrega la ciudad a las estructuras
                     Ciudad nuevaCiudad = new Ciudad(nombre, nomenclatura, Double.parseDouble(superficie),
-                    Double.parseDouble(promedio));
+                            Double.parseDouble(promedio));
                     nuevaCiudad.insertarDatosAnio(habitantes);
                     mapa.insertarVertice(nuevaCiudad.getNomenclatura());
                     arbol.insertar(nombre, nuevaCiudad);
@@ -393,7 +391,8 @@ public class TransporteDeAgua {
         }
     }
 
-    public static void encontrarYModificarTuberia(String nomenclaturaVieja, String nomenclaturaNueva, HashMap<Dom, Tuberia> hashTuberias) {
+    public static void encontrarYModificarTuberia(String nomenclaturaVieja, String nomenclaturaNueva,
+            HashMap<Dom, Tuberia> hashTuberias) {
         ArrayList<Dom> claves = new ArrayList<>(hashTuberias.keySet());
         for (int i = 0; i < hashTuberias.size(); i++) {
             // Recorro todas las claves del hashmap
@@ -478,7 +477,7 @@ public class TransporteDeAgua {
                     agregarTuberia(arbol, mapa, hashTuberias);
                     break;
                 case "2":
-                System.out.println("Cant tuberias " + hashTuberias.size());
+                    System.out.println("Cant tuberias " + hashTuberias.size());
                     eliminarTuberia(mapa, hashTuberias);
                     break;
                 case "3":
@@ -628,7 +627,6 @@ public class TransporteDeAgua {
         }
     }
 
-
     public static void modificarCaudalTuberia(Tuberia tuberia, Grafo mapa, String tipo) {
         Scanner sc = new Scanner(System.in);
         String caudal;
@@ -676,9 +674,11 @@ public class TransporteDeAgua {
 
     public static void modificarEstadoTuberia(Tuberia tuberia, Grafo mapa) {
         Scanner sc = new Scanner(System.in);
-        System.out.println("Ingrese el nuevo estado de la tubería " + tuberia.getNomenclatura() + " | OPCIONES: ACTIVO - EN REPARACION - EN DISEÑO - INACTIVO");
+        System.out.println("Ingrese el nuevo estado de la tubería " + tuberia.getNomenclatura()
+                + " | OPCIONES: ACTIVO - EN REPARACION - EN DISEÑO - INACTIVO");
         String estado = sc.nextLine().toUpperCase();
-        if (estado.equals("ACTIVO") || estado.equals("EN REPARACION") || estado.equals("EN REPARACIÓN") || estado.equals("EN DISEÑO") || estado.equals("INACTIVO")) {
+        if (estado.equals("ACTIVO") || estado.equals("EN REPARACION") || estado.equals("EN REPARACIÓN")
+                || estado.equals("EN DISEÑO") || estado.equals("INACTIVO")) {
             tuberia.setEstado(estado);
             System.out.println("El estado fue modificado correctamente.");
         } else {
@@ -1030,13 +1030,12 @@ public class TransporteDeAgua {
         Ciudad ciudadX = (Ciudad) arbolCiudades.obtenerDato(eleccion);
         boolean valido = false;
         String habitantes = "";
-
-        // Valida ciudad
         while (ciudadX == null) {
             System.out.println("Error: Ciudad ingresada no valida, ingrese nuevamente");
             eleccion = sc.nextLine().toUpperCase();
             ciudadX = (Ciudad) arbolCiudades.obtenerDato(eleccion);
         }
+
         // Solicita año y valida
         System.out.println("Ingrese el año que desea agregar habitantes");
         eleccion = sc.nextLine().toUpperCase();
@@ -1046,7 +1045,61 @@ public class TransporteDeAgua {
             eleccion = sc.nextLine().toUpperCase();
             anio = convertirAnio(eleccion);
         }
-        // Solicita habitantes por mes
+
+        do {
+            // Muestra el menú de consultas sobre ciudades
+            System.out.println("----------------------------------");
+            System.out.println("Desea ajustar solo los habitantes de un mes especifico? Y/N");
+            eleccion = sc.nextLine();
+
+            switch (eleccion) {
+                case "Y":
+                    ajustarHabitantesporMes(anio, ciudadX);
+                    break;
+                case "N":
+                    // Consulta de ciudades en un rango de nombres y volumen
+                    ajustarHabitantesporAnio(anio, ciudadX);
+                    break;
+                default:
+                    System.out.println("Error: opción incorrecta. Por favor elija de nuevo");
+            }
+
+        } while (!eleccion.equals("Y") && !eleccion.equals("N"));
+    }
+
+    public static void ajustarHabitantesporMes(int anio, Ciudad ciudadX) {
+        Scanner sc = new Scanner(System.in);
+        boolean valido = false;
+        String eleccion, habitantes = "";
+        int mes = 0;
+        System.out.println("Ingrese el mes que desea agregar habitantes");
+        eleccion = sc.nextLine().toUpperCase();
+        mes = convertirMesAInt(eleccion);
+        while (mes == -1) {
+            System.out.println("Error: Mes ingresado incorrecto, ingrese nuevamente");
+            eleccion = sc.nextLine().toUpperCase();
+            mes = convertirMesAInt(eleccion);
+        }
+        do {
+            System.out.println("Ingrese la cantidad de habitantes del mes ");
+            eleccion = sc.nextLine();
+            valido = esInt(eleccion);
+            if (valido) {
+                habitantes = eleccion;
+            } else {
+                System.out.println("Error: formato incorrecto.");
+            }
+        } while (!valido);
+
+        // Inserta los datos en la ciudad
+        System.out.println(ciudadX.insertarMesEspecifico(mes,anio, habitantes));
+    }
+
+    public static void ajustarHabitantesporAnio(int anio, Ciudad ciudadX) {
+        Scanner sc = new Scanner(System.in);
+        boolean valido = false;
+        String eleccion, habitantes = "";
+
         for (int i = 0; i < 12; i++) {
             do {
                 System.out.println("Ingrese la cantidad de habitantes del mes " + (i + 1) + ": ");
@@ -1088,7 +1141,7 @@ public class TransporteDeAgua {
             System.out.println("1. Obtener el camino con caudal pleno minimo desde " + nombreA + " a " + nombreB);
             System.out.println(
                     "2. Obtener el camino de " + nombreA + " a " + nombreB
-                    + " pasando por la minima cantidad de ciudades");
+                            + " pasando por la minima cantidad de ciudades");
             System.out.println("3. Salir al menu principal");
             System.out.println("----------------------------------");
             String eleccion = sc.nextLine();
@@ -1141,12 +1194,13 @@ public class TransporteDeAgua {
             ciudadB = (Ciudad) arbol.obtenerDato(nombreB);
         }
         // Devuelve ambas ciudades en un arreglo
-        Ciudad[] AyB = {ciudadA, ciudadB};
+        Ciudad[] AyB = { ciudadA, ciudadB };
         return AyB;
     }
 
     // Consulta el camino con caudal pleno mínimo entre dos ciudades
-    public static void consultarCaminoCaudalPlenoMin(Grafo mapa, Ciudad ciudadA, Ciudad ciudadB, HashMap<Dom, Tuberia> hashX) {
+    public static void consultarCaminoCaudalPlenoMin(Grafo mapa, Ciudad ciudadA, Ciudad ciudadB,
+            HashMap<Dom, Tuberia> hashX) {
         String nomenclaturaA = ciudadA.getNomenclatura();
         String nomenclaturaB = ciudadB.getNomenclatura();
         if (!mapa.vacio()) {

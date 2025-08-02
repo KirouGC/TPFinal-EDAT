@@ -81,8 +81,43 @@ public class Ciudad {
         anios.insertar(habitantesMensual, anios.longitud() + 1);
     }
 
+    public String insertarMesEspecifico(int mes, int anio, String habitantes) {
+        String resultado = "";
+        int longi = anios.longitud();
+        int valorX = anio - longi;
+        int habitantesMensual = Integer.parseInt(habitantes);
+        int[] nuevosHabitantes = new int[12];
+        
+        if (valorX > 0) {
+            while (valorX > 0) {
+                longi = longi + 1;
+                anios.insertar(null, longi);
+                valorX--;
+            }
+            nuevosHabitantes[mes] = habitantesMensual;
+            if(anios.insertar(nuevosHabitantes, longi))
+                resultado = "Habitantes insertados correctamente";
+            else
+                resultado = "Error al ingresar habitantes";
+        } else {
+            if (anios.recuperar(anio) == null) {
+                anios.eliminar(anio);
+                nuevosHabitantes[mes] = habitantesMensual;
+                if (anios.insertar(nuevosHabitantes, anio))
+                    resultado = "Habitantes insertados correctamente";
+                else
+                    resultado = "Error al ingresar habitantes";
+            } else{
+                nuevosHabitantes = (int []) anios.recuperar(anio);
+                nuevosHabitantes[mes] = habitantesMensual;
+                resultado = "Habitantes insertados correctamente";
+            }
+        }
+        return resultado;
+    }
+
     public String insertarAnioEspecifico(int anio, String habitantes) {
-        String resultado = "El año ingresado ya está cargado en el sistema";
+        String resultado = "";
         int longi = anios.longitud();
         int valorX = anio - longi;
         String[] cadaDato = habitantes.split(";");
@@ -102,16 +137,18 @@ public class Ciudad {
             else
                 resultado = "Error al ingresar habitantes";
         } else {
-            if (anios.recuperar(anio) == null) {
-                for (int i = 0; i < cadaDato.length; i++) {
+                for (int i = 0; i < cadaDato.length; i++){ 
                     habitantesMensual[i] = Integer.parseInt(cadaDato[i]);
                 }
-                if (anios.insertar(habitantesMensual, longi))
+                if(anios.recuperar(anio) != null){
+                    System.out.println("Año cargado previamente - Sobreescribiendo datos...");
+                    anios.eliminar(anio);
+                }
+                if (anios.insertar(habitantesMensual, anio))
                     resultado = "Habitantes insertados correctamente";
                 else
                     resultado = "Error al ingresar habitantes";
             }
-        }
         return resultado;
     }
 
@@ -140,7 +177,7 @@ public class Ciudad {
     public Double calcularPromedioVolumenMes(int anio, int mes) {
         int[] meses = (int[]) anios.recuperar(anio);
         Double promedio = 0.0;
-        if(meses != null)
+        if (meses != null)
             promedio = meses[mes] * promPersonalConsumidosPorDia;
         return promedio;
     }

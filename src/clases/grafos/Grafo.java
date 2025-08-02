@@ -243,14 +243,17 @@ public class Grafo {
     }
 
     private void caminoMasCortoAux(NodoVert actual, Object destino, Lista visitados, Lista mejorCamino) {
-        System.out.println("chau");
+        //System.out.println("chau");
         visitados.insertar(actual.getElem(), visitados.longitud() + 1);
         
+        //Si el nodo actual es el destino
         if (actual.getElem().equals(destino)) {
+            //Verificamos si el camino encontrado es el mejor
             if (mejorCamino.longitud() == 0 || visitados.longitud() < mejorCamino.longitud()) {
+                //Si lo es, copiamos la lista de visitados al mejor camino
                 copiarLista(visitados, mejorCamino);
             }
-        } else {
+        } else if(mejorCamino.longitud() == 0 || visitados.longitud() < mejorCamino.longitud()){ //Si no es el destino, seguimos buscando (siempre y cuando sea útil)
             NodoAdy ady = actual.getPrimerAdy();
             while (ady != null) {
                 if (!pertenece(visitados, ady.getVertice().getElem())) {
@@ -262,6 +265,7 @@ public class Grafo {
 
         visitados.eliminar(visitados.longitud());
     }
+
 
     public Lista listarEnProfundidad() {
         Lista visitados = new Lista();

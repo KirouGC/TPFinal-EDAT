@@ -1,8 +1,8 @@
 package clases.conjuntistas;
 
+import clases.lineales.dinamicas.Lista;
 import java.util.LinkedList;
 import java.util.Queue;
-import clases.lineales.dinamicas.Lista;
 
 public class ArbolAVL {
     NodoAVL raiz;
@@ -268,6 +268,5 @@ public class ArbolAVL {
 
         return resultado;
     }
-
 
 }

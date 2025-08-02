@@ -103,8 +103,7 @@ public class TransporteDeAgua {
         Ciudad nuevaCiudad = new Ciudad(datos[0], datos[1], Double.parseDouble(datos[2]), Double.parseDouble(datos[3]));
         mapa.insertarVertice(datos[1]);
         arbolCiudades.insertar(nuevaCiudad.getNombre(), nuevaCiudad);
-        String rutaHabitantes = System.getProperty("user.dir") + "\\textos\\datosHabitantes\\"
-                + nuevaCiudad.getNombre().toUpperCase() + ".txt";
+        String rutaHabitantes = System.getProperty("user.dir") + "\\textos\\datosHabitantes\\" + nuevaCiudad.getNombre().toUpperCase() + ".txt";
         cargarHabitantesDesdeArchivo(rutaHabitantes, nuevaCiudad);
     }
 
@@ -394,8 +393,7 @@ public class TransporteDeAgua {
         }
     }
 
-    public static void encontrarYModificarTuberia(String nomenclaturaVieja, String nomenclaturaNueva,
-            HashMap<Dom, Tuberia> hashTuberias) {
+    public static void encontrarYModificarTuberia(String nomenclaturaVieja, String nomenclaturaNueva, HashMap<Dom, Tuberia> hashTuberias) {
         ArrayList<Dom> claves = new ArrayList<>(hashTuberias.keySet());
         for (int i = 0; i < hashTuberias.size(); i++) {
             // Recorro todas las claves del hashmap
@@ -630,7 +628,6 @@ public class TransporteDeAgua {
         }
     }
 
-    
 
     public static void modificarCaudalTuberia(Tuberia tuberia, Grafo mapa, String tipo) {
         Scanner sc = new Scanner(System.in);
@@ -1149,8 +1146,7 @@ public class TransporteDeAgua {
     }
 
     // Consulta el camino con caudal pleno mínimo entre dos ciudades
-    public static void consultarCaminoCaudalPlenoMin(Grafo mapa, Ciudad ciudadA, Ciudad ciudadB,
-            HashMap<Dom, Tuberia> hashX) {
+    public static void consultarCaminoCaudalPlenoMin(Grafo mapa, Ciudad ciudadA, Ciudad ciudadB, HashMap<Dom, Tuberia> hashX) {
         String nomenclaturaA = ciudadA.getNomenclatura();
         String nomenclaturaB = ciudadB.getNomenclatura();
         if (!mapa.vacio()) {

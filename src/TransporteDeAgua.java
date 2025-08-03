@@ -20,6 +20,7 @@ public class TransporteDeAgua {
         String CiudadArchivoEntrada = System.getProperty("user.dir") + "\\textos\\ciudades.txt";
         String TuberiaArchivoEntrada = System.getProperty("user.dir") + "\\textos\\tuberias.txt";
         String linea = null;
+        int[] numNomen = {3000};
 
         try {
             // Lectura de archivos y estructuras principales
@@ -34,7 +35,7 @@ public class TransporteDeAgua {
 
             // Carga de datos de ciudades y tuberías desde archivos
             while (((linea = bufferLecCiudad.readLine()) != null)) {
-                cargarCiudad(linea, mapa, arbolCiudades);
+                cargarCiudad(linea, mapa, arbolCiudades, numNomen);
             }
             while (((linea = bufferLecTuberia.readLine()) != null)) {
                 cargarTuberia(linea, mapa, hashTuberias, arbolCiudades);
@@ -55,7 +56,7 @@ public class TransporteDeAgua {
                 accion = sc.nextLine();
                 switch (accion) {
                     case "1":
-                        menuCiudades(mapa, arbolCiudades, hashTuberias);
+                        menuCiudades(mapa, arbolCiudades, hashTuberias, numNomen);
                         break;
                     case "2":
                         menuTuberias(arbolCiudades, mapa, hashTuberias);
@@ -94,11 +95,12 @@ public class TransporteDeAgua {
     }
 
     // Carga una ciudad desde una línea del archivo y la agrega a las estructuras
-    public static void cargarCiudad(String linea, Grafo mapa, DiccionarioAVL arbolCiudades) {
+    public static void cargarCiudad(String linea, Grafo mapa, DiccionarioAVL arbolCiudades, int[] cantNomenclaturas) {
         String[] datos = linea.split(";");
         Ciudad nuevaCiudad = new Ciudad(datos[0], datos[1], Double.parseDouble(datos[2]), Double.parseDouble(datos[3]));
         mapa.insertarVertice(datos[1]);
         arbolCiudades.insertar(nuevaCiudad.getNombre(), nuevaCiudad);
+        cantNomenclaturas[0]++;
         String rutaHabitantes = System.getProperty("user.dir") + "\\textos\\datosHabitantes\\"
                 + nuevaCiudad.getNombre().toUpperCase() + ".txt";
         cargarHabitantesDesdeArchivo(rutaHabitantes, nuevaCiudad);
@@ -145,7 +147,7 @@ public class TransporteDeAgua {
     }
 
     // Menú para altas, bajas y modificaciones de ciudades
-    public static void menuCiudades(Grafo mapa, DiccionarioAVL arbol, HashMap<Dom, Tuberia> hashTuberias) {
+    public static void menuCiudades(Grafo mapa, DiccionarioAVL arbol, HashMap<Dom, Tuberia> hashTuberias, int[] cantNomenclaturas) {
         Scanner sc = new Scanner(System.in);
         String eleccion = "-1";
         do {
@@ -161,10 +163,14 @@ public class TransporteDeAgua {
             eleccion = sc.nextLine();
             switch (eleccion) {
                 case "1":
-                    agregarCiudad(mapa, arbol);
+                    if (cantNomenclaturas[0] >= 4000){
+                        System.out.println("Error: No se pueden agregar más ciudades, se ha alcanzado el límite de nomenclaturas.");
+                    } else {
+                        agregarCiudad(mapa, arbol, cantNomenclaturas);
+                    }
                     break;
                 case "2":
-                    eliminarCiudad(arbol, mapa);
+                    eliminarCiudad(arbol, mapa, cantNomenclaturas);
                     break;
                 case "3":
                     modificarCiudad(arbol, mapa, hashTuberias);
@@ -178,7 +184,7 @@ public class TransporteDeAgua {
         } while (!eleccion.equals("4"));
     }
 
-    public static void agregarCiudad(Grafo mapa, DiccionarioAVL arbol) {
+    public static void agregarCiudad(Grafo mapa, DiccionarioAVL arbol, int[] cantNomenclaturas) {
         Scanner sc = new Scanner(System.in);
         String nombre = "";
         String nomenclatura = "";
@@ -194,7 +200,7 @@ public class TransporteDeAgua {
         nombre = (sc.nextLine()).toUpperCase();
         valido = verificarValidezNombreCiudad(nombre, arbol);
         if (valido) {
-            nomenclatura = crearNomenclatura(nombre, arbol);
+            nomenclatura = crearNomenclatura(nombre, arbol, cantNomenclaturas);
             System.out.println("La nomenclatura de la ciudad será: " + nomenclatura);
             System.out.print("Ingrese la superficie de la nueva ciudad (Formato x.x): ");
             superficie = sc.nextLine();
@@ -262,25 +268,26 @@ public class TransporteDeAgua {
     }
 
     // Crea la nomenclatura de una ciudad
-    public static String crearNomenclatura(String n, DiccionarioAVL arbol) {
+    public static String crearNomenclatura(String n, DiccionarioAVL arbol, int[] cantNomenclaturas) {
         String nomenclatura = "";
         n = n.trim();
         int longi = (arbol.listarClaves()).longitud();
-        int num = 3000 + longi;
         if (n.contains(" ")) {
             nomenclatura = "" + n.charAt(0) + n.charAt((n.indexOf(' ') + 1));
             nomenclatura = nomenclatura.toUpperCase();
-            nomenclatura = nomenclatura + (num + 1);
+            cantNomenclaturas[0]++;
+            nomenclatura = nomenclatura + (cantNomenclaturas[0]);
         } else {
             nomenclatura = "" + n.charAt(0) + n.charAt(1);
             nomenclatura = nomenclatura.toUpperCase();
-            nomenclatura = nomenclatura + (num + 1);
+            cantNomenclaturas[0]++;
+            nomenclatura = nomenclatura + (cantNomenclaturas[0]);
         }
         return nomenclatura;
     }
 
     // Elimina una ciudad del sistema
-    public static void eliminarCiudad(DiccionarioAVL arbol, Grafo mapa) {
+    public static void eliminarCiudad(DiccionarioAVL arbol, Grafo mapa, int[] cantNomenclaturas) {
         Scanner sc = new Scanner(System.in);
         System.out.println("----------------------------------");
         System.out.println("ELIMINAR UNA NUEVA CIUDAD");
@@ -294,6 +301,7 @@ public class TransporteDeAgua {
             if (mapa.eliminarVertice(ciudadAEliminar.getNomenclatura())) {
                 System.out.println("Se eliminó la ciudad " + ciudadAEliminar.getNombre() + " correctamente");
                 arbol.eliminar(ciudadAEliminar.getNombre());
+                cantNomenclaturas[0]--;
             } else {
                 System.out.println(
                         "ERROR: Nombre encontrado, pero ciudad NO encontrada, cargue nuevamente las ciudades");
@@ -381,7 +389,7 @@ public class TransporteDeAgua {
             }
             if (valido) {
                 ciudadX.setNombre(nombre);
-                String nomenclaturaNueva = crearNomenclatura(nombre, arbol);
+                String nomenclaturaNueva = modificarNomenclatura(nombre, arbol);
                 encontrarYModificarTuberia(ciudadX.getNomenclatura(), nomenclaturaNueva, hashTuberias);
                 mapa.modificarVertice(ciudadX.getNomenclatura(), nomenclaturaNueva);
                 ciudadX.setNomenclatura(nomenclaturaNueva);
@@ -389,6 +397,22 @@ public class TransporteDeAgua {
                 System.out.println("NUEVA NOMENCLATURA: " + nomenclaturaNueva);
             }
         }
+    }
+
+    public static String modificarNomenclatura(String n, DiccionarioAVL arbol) {
+        String nomenclatura = "";
+        n = n.trim();
+        int longi = (arbol.listarClaves()).longitud();
+        if (n.contains(" ")) {
+            nomenclatura = "" + n.charAt(0) + n.charAt((n.indexOf(' ') + 1));
+            nomenclatura = nomenclatura.toUpperCase();
+            nomenclatura = nomenclatura + n.substring(2);
+        } else {
+            nomenclatura = "" + n.charAt(0) + n.charAt(1);
+            nomenclatura = nomenclatura.toUpperCase();
+            nomenclatura = nomenclatura + n.substring(2);;
+        }
+        return nomenclatura;
     }
 
     public static void encontrarYModificarTuberia(String nomenclaturaVieja, String nomenclaturaNueva,
@@ -1464,6 +1488,8 @@ public class TransporteDeAgua {
         return resultado; // Un solo return al final del método
     }
 
+}
+
     //MergeSort
     // Algoritmo MergeSort para un arreglo de enteros
     /*public static void mergeSort(int[] arr, int left, int right) {
@@ -1512,4 +1538,4 @@ public class TransporteDeAgua {
             k++;
         }
     }
-}
+}*/

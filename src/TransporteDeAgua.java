@@ -1,3 +1,4 @@
+
 import clases.especifico.DiccionarioAVL;
 import clases.grafos.Grafo;
 import clases.lineales.dinamicas.Lista;
@@ -45,9 +46,7 @@ public class TransporteDeAgua {
             // System.out.println(((Ciudad) listaTest.recuperar(i+1)).getNombre());
             // }
             // System.out.println(arbolCiudades.eliminar("RIO GALLEGOS"));
-
             // FIN TESTING
-
             // Bucle principal del menú
             boolean volverMenu = false;
             do {
@@ -267,14 +266,15 @@ public class TransporteDeAgua {
         String nomenclatura = "";
         n = n.trim();
         int longi = (arbol.listarClaves()).longitud();
+        int num = 3000 + longi;
         if (n.contains(" ")) {
             nomenclatura = "" + n.charAt(0) + n.charAt((n.indexOf(' ') + 1));
             nomenclatura = nomenclatura.toUpperCase();
-            nomenclatura = nomenclatura + "30" + (longi + 1);
+            nomenclatura = nomenclatura + (num + 1);
         } else {
             nomenclatura = "" + n.charAt(0) + n.charAt(1);
             nomenclatura = nomenclatura.toUpperCase();
-            nomenclatura = nomenclatura + "30" + (longi + 1);
+            nomenclatura = nomenclatura + (num + 1);
         }
         return nomenclatura;
     }
@@ -477,11 +477,10 @@ public class TransporteDeAgua {
                     agregarTuberia(arbol, mapa, hashTuberias);
                     break;
                 case "2":
-                    System.out.println("Cant tuberias " + hashTuberias.size());
-                    eliminarTuberia(mapa, hashTuberias);
+                    eliminarTuberia(mapa, hashTuberias, arbol);
                     break;
                 case "3":
-                    modificarTuberia(mapa, hashTuberias);
+                    modificarTuberia(mapa, hashTuberias, arbol);
                     break;
                 case "4":
                     System.out.println("Volviendo al menú principal.");
@@ -497,71 +496,69 @@ public class TransporteDeAgua {
         Scanner sc = new Scanner(System.in);
         String desde, hasta, caudalMin, caudalMax, diametro, estado;
         boolean valido = false;
-        String nomenclatura;
-        System.out.println("Ingrese el nombre de la ciudad de partida: ");
-        desde = sc.nextLine().toUpperCase();
-        valido = verificarNombreDiccionario(desde, arbol);
-        if (valido) {
-            valido = false;
-            System.out.println("Ingrese el nombre de la ciudad destino: ");
-            hasta = sc.nextLine().toUpperCase();
-            valido = verificarNombreDiccionario(hasta, arbol);
-            if (valido) {
-                nomenclatura = desde + "-" + hasta;
-                System.out.println("Ingrese el caudal minimo: ");
+        String nomen = buscarNomenclaturaTuberia(arbol);
+        String[] partes = nomen.split("-");
+        Dom dominio = new Dom(partes[0], partes[1]);
+        Tuberia tuberia = hashTuberias.get(dominio);
+        desde = (partes[0]);
+        hasta = (partes[1]);
+        if (tuberia == null) {
+            System.out.println("Ingrese el diametro: ");
+            diametro = sc.nextLine();
+            while (!esInt(diametro)) {
+                System.out.println("Error: formato incorrecto. Ingrese el diametro: ");
+                diametro = sc.nextLine();
+            }
+            System.out.println("Ingrese el caudal minimo: ");
+            caudalMin = sc.nextLine();
+            while (!esInt(caudalMin)) {
+                System.out.println("Error: formato incorrecto. Ingrese el caudal minimo: ");
                 caudalMin = sc.nextLine();
-                if (esInt(caudalMin)) {
-                    System.out.println("Ingrese el caudal máximo: ");
-                    caudalMax = sc.nextLine();
-                    if (esInt(caudalMax)) {
-                        System.out.println("Ingrese el diametro: ");
-                        diametro = sc.nextLine();
-                        if (esInt(diametro)) {
-                            System.out.println("Ingrese el estado (ACTIVO / EN REPARACIÓN / EN DISEÑO / INACTIVO): ");
-                            estado = sc.nextLine();
-                            estado = estado.toUpperCase();
-                            if (estado.equals("ACTIVO") || estado.equals("EN REPARACION")
-                                    || estado.equals("EN REPARACIÓN") || estado.equals("EN DISEÑO")
-                                    || estado.equals("INACTIVO")) {
-                                // Se crea y agrega la tubería a las estructuras
-                                Tuberia nuevaTuberia = new Tuberia(nomenclatura, Integer.valueOf(caudalMin),
-                                        Integer.valueOf(caudalMax), Integer.valueOf(diametro), estado);
-                                desde = ((Ciudad) arbol.obtenerDato(desde)).getNomenclatura();
-                                hasta = ((Ciudad) arbol.obtenerDato(hasta)).getNomenclatura();
-                                System.out.println("DESDE: " + desde + " / HASTA: " + hasta);
-                                Dom auxDom = new Dom(desde, hasta);
-                                hashTuberias.put(auxDom, nuevaTuberia);
-                                System.out.println("La nueva tuberia se añadió con éxito.");
-                            } else {
-                                System.out.println("Error: estado inválido");
-                            }
-                        } else {
-                            System.out.println("Error: formato incorrecto");
-                        }
-                    } else {
-                        System.out.println("Error: formato incorrecto");
-                    }
+            }
+
+            System.out.println("Ingrese el caudal máximo: ");
+            caudalMax = sc.nextLine();
+            while (!esInt(caudalMax)) {
+                System.out.println("Error: formato incorrecto. Ingrese el caudal máximo: ");
+                caudalMax = sc.nextLine();
+            }
+
+            if (mapa.insertarArco(desde, hasta, caudalMax)) {
+                System.out.println("Ingrese el estado (ACTIVO / EN REPARACIÓN / EN DISEÑO / INACTIVO): ");
+                estado = sc.nextLine();
+                estado = estado.toUpperCase();
+                if (verificarEstado(estado)) {
+                    // Se crea y agrega la tubería a las estructuras
+                        Tuberia nuevaTuberia = new Tuberia(nomen, Integer.valueOf(caudalMin),
+                                Integer.valueOf(caudalMax), Integer.valueOf(diametro), estado);
+                        System.out.println("DESDE: " + desde + " / HASTA: " + hasta);
+                        Dom auxDom = new Dom(desde, hasta);
+                        hashTuberias.put(auxDom, nuevaTuberia);
+                        System.out.println("La nueva tuberia se añadió con éxito.");
                 } else {
-                    System.out.println("Error: formato incorrecto");
+                    System.out.println("Error: Formato Incorrecto");
                 }
             } else {
-                System.out.println("Error: el nombre ingresado es incorrecto o la ciudad no existe.");
+                System.out.println("Error: Caudal Máximo ya existente");
             }
         } else {
-            System.out.println("Error: el nombre ingresado es incorrecto o la ciudad no existe.");
+            System.out.println("Error: la tubería con nomenclatura '" + nomen + "' ya existe.");
         }
     }
 
+    public static boolean verificarEstado(String estado) {
+        return estado.equals("ACTIVO") || estado.equals("EN REPARACION") || estado.equals("EN REPARACIÓN")
+                || estado.equals("EN DISEÑO") || estado.equals("INACTIVO");
+    }
+
     // Elimina una tubería del sistema
-    public static void eliminarTuberia(Grafo mapa, HashMap<Dom, Tuberia> hashTuberias) {
+    public static void eliminarTuberia(Grafo mapa, HashMap<Dom, Tuberia> hashTuberias, DiccionarioAVL arbol) {
         Scanner sc = new Scanner(System.in);
-        System.out.print("Ingrese la nomenclatura de la tuberia a eliminar: ");
-        String nomen = sc.nextLine();
+        String nomen = buscarNomenclaturaTuberia(arbol);
         String[] partes = nomen.split("-");
         Dom dominio = new Dom(partes[0], partes[1]);
         Tuberia tuberia = hashTuberias.get(dominio);
         if (tuberia != null) {
-            System.out.println("entre");
             int caudal = tuberia.getCaudalMax();
             boolean hecho = mapa.eliminarArco(caudal);
             if (hecho) {
@@ -582,11 +579,10 @@ public class TransporteDeAgua {
     }
 
     // Permite modificar los datos de una tubería (estructura a completar)
-    public static void modificarTuberia(Grafo mapa, HashMap<Dom, Tuberia> hashTuberias) {
+    public static void modificarTuberia(Grafo mapa, HashMap<Dom, Tuberia> hashTuberias, DiccionarioAVL arbol) {
         Scanner sc = new Scanner(System.in);
         String accion = "";
-        System.out.println("Ingrese la nomenclatura de la tuberia a modificar: ");
-        String nomen = (sc.nextLine()).toUpperCase();
+        String nomen = buscarNomenclaturaTuberia(arbol);
         // Aquí debería buscarse la tubería y permitir modificar sus datos
         String[] partes = nomen.split("-");
         Dom dominio = new Dom(partes[0], partes[1]);
@@ -625,6 +621,25 @@ public class TransporteDeAgua {
         } else {
             System.out.println("Error: la nomenclatura es incorrecta o la tuberia no existe.");
         }
+    }
+
+    public static String buscarNomenclaturaTuberia(DiccionarioAVL arbol) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Ingrese el nombre de la ciudad origen: ");
+        String origen = sc.nextLine();
+        while (arbol.obtenerDato(origen.toUpperCase()) == null) {
+            System.out.println("Error: la ciudad origen no existe. Ingrese un nombre válido.");
+            origen = sc.nextLine();
+        }
+        System.out.print("Ingrese el nombre de la ciudad destino: ");
+        String destino = sc.nextLine();
+        while (arbol.obtenerDato(destino.toUpperCase()) == null) {
+            System.out.println("Error: la ciudad destino no existe. Ingrese un nombre válido.");
+            destino = sc.nextLine();
+        }
+        String nomen = ((Ciudad) (arbol.obtenerDato(origen.toUpperCase()))).getNomenclatura() + "-"
+                + ((Ciudad) (arbol.obtenerDato(destino.toUpperCase()))).getNomenclatura();
+        return nomen;
     }
 
     public static void modificarCaudalTuberia(Tuberia tuberia, Grafo mapa, String tipo) {
@@ -766,24 +781,24 @@ public class TransporteDeAgua {
             if (ciudadX.verificarAnio(1)) {
                 // Solicita año y mes, valida y muestra los datos de consumo
                 System.out.println(
-                        "Ingrese el año del cual desea consultar el volumen de agua (El año debe ser mayor o igual a 2016): ");
+                        "Ingrese el año del cual desea consultar el volumen de agua");
                 eleccion = sc.nextLine();
-                String anioString = eleccion;
                 int anio = convertirAnio(eleccion);
                 while (anio == -1 || !ciudadX.verificarAnio(anio)) {
                     System.out.println("Año invalido o no presente en el registro, ingrese nuevamente");
                     eleccion = sc.nextLine();
                     anio = convertirAnio(eleccion);
                 }
+                String anioString = eleccion;
                 System.out.println("Ingrese el mes del cual desea consultar el volumen de agua: ");
                 eleccion = sc.nextLine();
-                String mesString = eleccion;
                 int mes = convertirMesAInt(eleccion);
                 while (mes == -1) {
                     System.out.println("Mes invalido, ingrese nuevamente");
                     eleccion = sc.nextLine();
                     mes = convertirMesAInt(eleccion);
                 }
+                String mesString = eleccion;
                 promedio = ciudadX.calcularPromedioVolumenAnio(anio);
                 if (promedio > 0) {
                     // Muestra resultados
@@ -1092,7 +1107,7 @@ public class TransporteDeAgua {
         } while (!valido);
 
         // Inserta los datos en la ciudad
-        System.out.println(ciudadX.insertarMesEspecifico(mes,anio, habitantes));
+        System.out.println(ciudadX.insertarMesEspecifico(mes, anio, habitantes));
     }
 
     public static void ajustarHabitantesporAnio(int anio, Ciudad ciudadX) {

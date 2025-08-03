@@ -60,9 +60,9 @@ public class Grafo {
             while (ultimo.getSigAdyacente() != null && !ultimo.getEtiqueta().equals(etiqueta)) {
                 ultimo = ultimo.getSigAdyacente();
             }
-            // if (ultimo.getEtiqueta().equals(etiqueta)) { // Si se descomenta, NO PERMITE ETIQUETAS DE ARCOS REPETIDOS
-            //     ultimo = null;
-            // }
+            if (ultimo.getEtiqueta().equals(etiqueta)) { // Si se descomenta, NO PERMITE ETIQUETAS DE ARCOS REPETIDOS
+                ultimo = null;
+            } 
         }
         return ultimo;
     }

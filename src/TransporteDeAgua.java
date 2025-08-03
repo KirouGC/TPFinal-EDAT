@@ -523,21 +523,21 @@ public class TransporteDeAgua {
                 caudalMax = sc.nextLine();
             }
 
-            if (mapa.insertarArco(desde, hasta, caudalMax)) {
+            if (!mapa.existeArco(Integer.parseInt(caudalMax))) {
                 System.out.println("Ingrese el estado (ACTIVO / EN REPARACIÓN / EN DISEÑO / INACTIVO): ");
-                estado = sc.nextLine();
-                estado = estado.toUpperCase();
-                if (verificarEstado(estado)) {
-                    // Se crea y agrega la tubería a las estructuras
-                        Tuberia nuevaTuberia = new Tuberia(nomen, Integer.valueOf(caudalMin),
-                                Integer.valueOf(caudalMax), Integer.valueOf(diametro), estado);
-                        System.out.println("DESDE: " + desde + " / HASTA: " + hasta);
-                        Dom auxDom = new Dom(desde, hasta);
-                        hashTuberias.put(auxDom, nuevaTuberia);
-                        System.out.println("La nueva tuberia se añadió con éxito.");
-                } else {
-                    System.out.println("Error: Formato Incorrecto");
+                estado = sc.nextLine().toUpperCase();
+                while (!verificarEstado(estado)) {
+                    System.out.println("Error: estado inválido. Ingrese el estado (ACTIVO / EN REPARACIÓN / EN DISEÑO / INACTIVO): ");
+                    estado = sc.nextLine().toUpperCase();
                 }
+                // Se crea y agrega la tubería a las estructuras
+                mapa.insertarArco(desde, hasta, caudalMax);
+                Tuberia nuevaTuberia = new Tuberia(nomen, Integer.valueOf(caudalMin),
+                        Integer.valueOf(caudalMax), Integer.valueOf(diametro), estado);
+                System.out.println("DESDE: " + desde + " / HASTA: " + hasta);
+                Dom auxDom = new Dom(desde, hasta);
+                hashTuberias.put(auxDom, nuevaTuberia);
+                System.out.println("La nueva tuberia se añadió con éxito.");
             } else {
                 System.out.println("Error: Caudal Máximo ya existente");
             }
@@ -661,7 +661,11 @@ public class TransporteDeAgua {
         } else if (tipo.equals("max")) {
             System.out.println("Ingrese el nuevo caudal máximo de la tubería " + tuberia.getNomenclatura());
             caudal = sc.nextLine();
-            if (esInt(caudal)) {
+            while (!esInt(caudal)) {
+                System.out.println("Error: formato incorrecto. Vuelva a ingresar:");
+                caudal = sc.nextLine();
+            }
+            if (!mapa.existeArco(Integer.parseInt(caudal))) {
                 if (Integer.parseInt(caudal) < tuberia.getCaudalMin()) {
                     System.out.println("Error: el caudal máximo no puede ser menor que el caudal mínimo.");
                 } else {
@@ -670,7 +674,7 @@ public class TransporteDeAgua {
                     System.out.println("El caudal máximo fue modificado correctamente.");
                 }
             } else {
-                System.out.println("Error: formato incorrecto.");
+                System.out.println("Error: Caudal Maximo repetido");
             }
         }
     }
@@ -1156,7 +1160,7 @@ public class TransporteDeAgua {
             System.out.println("1. Obtener el camino con caudal pleno minimo desde " + nombreA + " a " + nombreB);
             System.out.println(
                     "2. Obtener el camino de " + nombreA + " a " + nombreB
-                            + " pasando por la minima cantidad de ciudades");
+                    + " pasando por la minima cantidad de ciudades");
             System.out.println("3. Salir al menu principal");
             System.out.println("----------------------------------");
             String eleccion = sc.nextLine();
@@ -1209,7 +1213,7 @@ public class TransporteDeAgua {
             ciudadB = (Ciudad) arbol.obtenerDato(nombreB);
         }
         // Devuelve ambas ciudades en un arreglo
-        Ciudad[] AyB = { ciudadA, ciudadB };
+        Ciudad[] AyB = {ciudadA, ciudadB};
         return AyB;
     }
 
@@ -1458,5 +1462,54 @@ public class TransporteDeAgua {
             }
         }
         return resultado; // Un solo return al final del método
+    }
+
+    //MergeSort
+    // Algoritmo MergeSort para un arreglo de enteros
+    /*public static void mergeSort(int[] arr, int left, int right) {
+        if (left < right) {
+            int mid = (left + right) / 2;
+            mergeSort(arr, left, mid);
+            mergeSort(arr, mid + 1, right);
+            merge(arr, left, mid, right);
+        }
+    }
+
+    private static void merge(int[] arr, int left, int mid, int right) {
+        int n1 = mid - left + 1;
+        int n2 = right - mid;
+
+        int[] L = new int[n1];
+        int[] R = new int[n2];
+
+        for (int i = 0; i < n1; i++) {
+            L[i] = arr[left + i];
+        }
+        for (int j = 0; j < n2; j++) {
+            R[j] = arr[mid + 1 + j];
+        }
+
+        int i = 0, j = 0, k = left;
+        while (i < n1 && j < n2) {
+            if (L[i] <= R[j]) {
+                arr[k] = L[i];
+                i++;
+            } else {
+                arr[k] = R[j];
+                j++;
+            }
+            k++;
+        }
+
+        while (i < n1) {
+            arr[k] = L[i];
+            i++;
+            k++;
+        }
+        while (j < n2) {
+            arr[k] = R[j];
+            j++;
+            k++;
+        }
     }
 }

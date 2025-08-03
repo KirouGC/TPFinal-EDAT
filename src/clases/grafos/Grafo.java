@@ -323,7 +323,6 @@ public class Grafo {
                     logrado = true;
                 } else if (arcoActual.getEtiqueta().equals(etiqueta) && arcoActual != nodo.getPrimerAdy()) {
                     arcoAnterior.setSigAdyacente(arcoActual.getSigAdyacente());
-                    ;
                     logrado = true;
                 }
                 arcoAnterior = arcoActual;
@@ -350,6 +349,25 @@ public class Grafo {
         }
         return existe;
     }
+
+    //Para verificar si existe un arco con una etiqueta específica
+    public boolean existeArco(Object etiqueta) {
+        boolean encontrado = false;
+        NodoVert aux = this.inicio;
+        while(aux != null && !encontrado){
+            NodoAdy adyacente = aux.getPrimerAdy();
+            while(adyacente != null && !encontrado){
+                if(etiqueta.equals(adyacente.getEtiqueta())){
+                    encontrado = true;
+                } else {
+                    adyacente = adyacente.getSigAdyacente();
+                }
+            }
+            aux = aux.getSigVertice();
+        }
+        return encontrado;
+    }
+
 
     private boolean recorrerArcosAux(NodoVert vertice, Object buscado) {
         boolean encontrado = false;

@@ -446,7 +446,6 @@ public class Grafo {
             }
         }
 
-        // backtrack
         visitados.eliminar(visitados.longitud());
         caminoActual.eliminar(caminoActual.longitud());
     }
@@ -481,5 +480,33 @@ public class Grafo {
             exito = true;
         }
         return exito;
-    }   
+    }
+    
+    public Lista listarVerticeYArcos(Object elem){
+        int cont = 1;
+        Lista listaArcos = new Lista ();
+        NodoVert aux = this.inicio;
+        NodoAdy auxAdy = this.inicio.getPrimerAdy();
+        while(aux != null){
+            auxAdy = aux.getPrimerAdy();
+            while(auxAdy != null){
+                if(auxAdy.getVertice().getElem().equals(elem)){
+                    Object [] destinos = new Object[2];
+                    destinos[1] = auxAdy.getVertice().getElem();
+                    destinos[0] = aux.getElem();
+                    listaArcos.insertar(destinos, cont);
+                    cont++;
+                } else if(aux.getElem().equals(elem)){
+                    Object [] destinos = new Object[2];
+                    destinos[0] = aux.getElem();
+                    destinos[1] = auxAdy.getVertice().getElem();
+                    listaArcos.insertar(destinos, cont);
+                    cont++;
+                }
+                auxAdy = auxAdy.getSigAdyacente();
+            }
+            aux = aux.getSigVertice();
+        }
+    return listaArcos;
+    }
 }

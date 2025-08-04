@@ -174,7 +174,7 @@ public class TransporteDeAgua {
                     }
                     break;
                 case "2":
-                    eliminarCiudad(arbol, mapa, cantNomenclaturas, nomenclaturasLibres);
+                    eliminarCiudad(arbol, mapa, cantNomenclaturas, nomenclaturasLibres, hashTuberias);
                     break;
                 case "3":
                     modificarCiudad(arbol, mapa, hashTuberias);
@@ -299,7 +299,7 @@ public class TransporteDeAgua {
 
     // Elimina una ciudad del sistema
     public static void eliminarCiudad(DiccionarioAVL arbol, Grafo mapa, int[] cantNomenclaturas,
-            Cola nomenclaturasLibres) {
+            Cola nomenclaturasLibres, HashMap<Dom, Tuberia> hashTuberias) {
         Scanner sc = new Scanner(System.in);
         System.out.println("----------------------------------");
         System.out.println("ELIMINAR UNA NUEVA CIUDAD");
@@ -309,18 +309,40 @@ public class TransporteDeAgua {
             Ciudad ciudadAEliminar = (Ciudad) arbol.obtenerDato(eleccion);
             if (ciudadAEliminar == null) {
                 ciudadAEliminar = ciudadNoEncontrada(arbol, ciudadAEliminar, sc);
-            }
-            if (mapa.eliminarVertice(ciudadAEliminar.getNomenclatura())) {
+            } 
+            if (mapa.existeVertice(ciudadAEliminar.getNomenclatura())) {
+                Lista listaX = mapa.listarVerticeYArcos((String) ciudadAEliminar.getNomenclatura());
+                //Se eliminan las tuberias con algun extremo en esta ciudad
+                eliminarTuberiasDeHash(hashTuberias, listaX);
                 System.out.println("Se eliminó la ciudad " + ciudadAEliminar.getNombre() + " correctamente");
                 int numNomen = Integer.parseInt(ciudadAEliminar.getNomenclatura().substring(2));
                 nomenclaturasLibres.poner(numNomen);
+                //Se elimina la ciudad del ArbolAVL
                 arbol.eliminar(ciudadAEliminar.getNombre());
             } else {
-                System.out.println(
-                        "ERROR: Nombre encontrado, pero ciudad NO encontrada, cargue nuevamente las ciudades");
+                System.out.println("ERROR: Nombre encontrado, pero ciudad NO encontrada, cargue nuevamente las ciudades");
             }
         }
         System.out.println("----------------------------------");
+    }
+
+    public static void eliminarTuberiasDeHash(HashMap<Dom, Tuberia> hashTuberias, Lista listaX) {
+        // Este método se puede implementar si se desea eliminar la ciudad de un HashMap
+        // de tuberías
+        int longi = listaX.longitud();
+        Object[] nombre;
+        Dom dominioX = new Dom();
+        for (int i = 1; i <= longi; i++) {
+            nombre = (Object[])listaX.recuperar(i);
+            dominioX.setNom1((String) nombre[0]);
+            dominioX.setNom2((String) nombre[1]);
+            if (hashTuberias.containsKey(dominioX)) {
+                hashTuberias.remove(dominioX);
+                System.out.println("Se eliminó la tubería " + dominioX.getNom1() + "-" + dominioX.getNom2() + " correctamente");
+            } else {
+                System.out.println("No se encontró la tubería " + dominioX.getNom1() + "-" + dominioX.getNom2());
+            }
+        }
     }
 
     // Solicita al usuario un nombre de ciudad válido si no se encuentra
@@ -1336,6 +1358,7 @@ public class TransporteDeAgua {
             int cadaLista = 1;
             Lista aux = (Lista) caminosPosibles.recuperar(1);
             int longi = caminosPosibles.longitud();
+            int longiAux = 0;
             Dom dominio = new Dom((String) aux.recuperar(1), (String) aux.recuperar(2));
             int caudalPlenoMin = 0;
             int caudalPlenoActual = 0;
@@ -1347,7 +1370,8 @@ public class TransporteDeAgua {
                     dominio.setNom2((String) aux.recuperar(2));
                     diametroMin = hashX.get(dominio).getDiametro();
                     caudalPlenoActual = 0;
-                    for (int g = 1; g < aux.longitud(); g++) {
+                    longiAux = aux.longitud();
+                    for (int g = 1; g < longiAux; g++) {
                         dominio.setNom1((String) aux.recuperar(g));
                         dominio.setNom2((String) aux.recuperar(g + 1));
                         if (hashX.get(dominio).getDiametro() <= diametroMin && !out.equals(aux)) {

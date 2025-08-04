@@ -489,11 +489,12 @@ public class Grafo {
         NodoAdy auxAdy = this.inicio.getPrimerAdy();
         while(aux != null){
             auxAdy = aux.getPrimerAdy();
+            System.out.println("entre2");
             while(auxAdy != null){
                 if(auxAdy.getVertice().getElem().equals(elem)){
                     Object [] destinos = new Object[2];
-                    destinos[1] = auxAdy.getVertice().getElem();
-                    destinos[0] = aux.getElem();
+                    destinos[0] = auxAdy.getVertice().getElem();
+                    destinos[1] = aux.getElem();
                     listaArcos.insertar(destinos, cont);
                     cont++;
                 } else if(aux.getElem().equals(elem)){

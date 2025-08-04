@@ -2,6 +2,7 @@
 import clases.especifico.DiccionarioAVL;
 import clases.grafos.Grafo;
 import clases.lineales.dinamicas.Lista;
+import clases.lineales.dinamicas.Cola;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -20,7 +21,6 @@ public class TransporteDeAgua {
         String CiudadArchivoEntrada = System.getProperty("user.dir") + "\\textos\\ciudades.txt";
         String TuberiaArchivoEntrada = System.getProperty("user.dir") + "\\textos\\tuberias.txt";
         String linea = null;
-        int[] numNomen = {3000};
 
         try {
             // Lectura de archivos y estructuras principales
@@ -29,6 +29,8 @@ public class TransporteDeAgua {
             FileReader lectorTuberia = new FileReader(TuberiaArchivoEntrada);
             BufferedReader bufferLecTuberia = new BufferedReader(lectorTuberia);
 
+            int[] numNomen = { 3000 };
+            Cola nomenclaturasLibres = new Cola();
             Grafo mapa = new Grafo();
             DiccionarioAVL arbolCiudades = new DiccionarioAVL();
             HashMap<Dom, Tuberia> hashTuberias = new HashMap<>();
@@ -56,7 +58,7 @@ public class TransporteDeAgua {
                 accion = sc.nextLine();
                 switch (accion) {
                     case "1":
-                        menuCiudades(mapa, arbolCiudades, hashTuberias, numNomen);
+                        menuCiudades(mapa, arbolCiudades, hashTuberias, numNomen, nomenclaturasLibres);
                         break;
                     case "2":
                         menuTuberias(arbolCiudades, mapa, hashTuberias);
@@ -147,7 +149,8 @@ public class TransporteDeAgua {
     }
 
     // Menú para altas, bajas y modificaciones de ciudades
-    public static void menuCiudades(Grafo mapa, DiccionarioAVL arbol, HashMap<Dom, Tuberia> hashTuberias, int[] cantNomenclaturas) {
+    public static void menuCiudades(Grafo mapa, DiccionarioAVL arbol, HashMap<Dom, Tuberia> hashTuberias,
+            int[] cantNomenclaturas, Cola nomenclaturasLibres) {
         Scanner sc = new Scanner(System.in);
         String eleccion = "-1";
         do {
@@ -163,14 +166,15 @@ public class TransporteDeAgua {
             eleccion = sc.nextLine();
             switch (eleccion) {
                 case "1":
-                    if (cantNomenclaturas[0] >= 4000){
-                        System.out.println("Error: No se pueden agregar más ciudades, se ha alcanzado el límite de nomenclaturas.");
+                    if (cantNomenclaturas[0] >= 4000 && nomenclaturasLibres.esVacia()) {
+                        System.out.println(
+                                "Error: No se pueden agregar más ciudades, se ha alcanzado el límite de nomenclaturas.");
                     } else {
-                        agregarCiudad(mapa, arbol, cantNomenclaturas);
+                        agregarCiudad(mapa, arbol, cantNomenclaturas, nomenclaturasLibres);
                     }
                     break;
                 case "2":
-                    eliminarCiudad(arbol, mapa, cantNomenclaturas);
+                    eliminarCiudad(arbol, mapa, cantNomenclaturas, nomenclaturasLibres);
                     break;
                 case "3":
                     modificarCiudad(arbol, mapa, hashTuberias);
@@ -184,7 +188,8 @@ public class TransporteDeAgua {
         } while (!eleccion.equals("4"));
     }
 
-    public static void agregarCiudad(Grafo mapa, DiccionarioAVL arbol, int[] cantNomenclaturas) {
+    public static void agregarCiudad(Grafo mapa, DiccionarioAVL arbol, int[] cantNomenclaturas,
+            Cola nomenclaturasLibres) {
         Scanner sc = new Scanner(System.in);
         String nombre = "";
         String nomenclatura = "";
@@ -198,50 +203,52 @@ public class TransporteDeAgua {
         System.out.println("AGREGAR UNA NUEVA CIUDAD");
         System.out.print("Ingrese el nombre de la nueva ciudad: ");
         nombre = (sc.nextLine()).toUpperCase();
-        valido = verificarValidezNombreCiudad(nombre, arbol);
-        if (valido) {
-            nomenclatura = crearNomenclatura(nombre, arbol, cantNomenclaturas);
-            System.out.println("La nomenclatura de la ciudad será: " + nomenclatura);
-            System.out.print("Ingrese la superficie de la nueva ciudad (Formato x.x): ");
+        while (!verificarValidezNombreCiudad(nombre, arbol)) {
+            System.out.println("Error: el nombre ingresado es inválido o ya existe. Ingrese un nombre válido:");
+            nombre = (sc.nextLine()).toUpperCase();
+        }
+
+        nomenclatura = crearNomenclatura(nombre, arbol, cantNomenclaturas, nomenclaturasLibres);
+        System.out.println("La nomenclatura de la ciudad será: " + nomenclatura);
+        System.out.print("Ingrese la superficie de la nueva ciudad (Formato x.x): ");
+        superficie = sc.nextLine();
+        while (!esDouble(superficie)) {
+            System.out.println("Error: formato incorrecto. Ingrese la superficie de la nueva ciudad (Formato x.x): ");
             superficie = sc.nextLine();
-            if (esDouble(superficie)) {
-                System.out.print("Ingrese el promedio personal de consumo diario (Formato x.x): ");
-                promedio = sc.nextLine();
-                if (esDouble(promedio)) {
-                    // Carga de habitantes por mes
-                    for (int i = 0; i < 12; i++) {
-                        valido = false;
-                        do {
-                            System.out.println("Ingrese la cantidad de habitantes del mes " + (i + 1) + ": ");
-                            aux = sc.nextLine();
-                            valido = esInt(aux);
-                            if (valido) {
-                                if (i < 11) {
-                                    habitantes += aux + ";";
-                                } else {
-                                    habitantes += aux;
-                                }
-                            } else {
-                                System.out.println("Error: formato incorrecto.");
-                            }
-                        } while (!valido);
+        }
+        System.out.print("Ingrese el promedio personal de consumo diario (Formato x.x): ");
+        promedio = sc.nextLine();
+        while (!esDouble(promedio)) {
+            System.out.println(
+                    "Error: formato incorrecto. Ingrese el promedio personal de consumo diario (Formato x.x): ");
+            promedio = sc.nextLine();
+        }
+
+        // Carga de habitantes por mes
+        for (int i = 1; i <= 12; i++) {
+            valido = false;
+            do {
+                System.out.println("Ingrese la cantidad de habitantes del mes " + convertirIntAMes(i) + ": ");
+                aux = sc.nextLine();
+                valido = esInt(aux);
+                if (valido) {
+                    if (i < 11) {
+                        habitantes += aux + ";";
+                    } else {
+                        habitantes += aux;
                     }
-                    // Se crea y agrega la ciudad a las estructuras
-                    Ciudad nuevaCiudad = new Ciudad(nombre, nomenclatura, Double.parseDouble(superficie),
-                            Double.parseDouble(promedio));
-                    nuevaCiudad.insertarDatosAnio(habitantes);
-                    mapa.insertarVertice(nuevaCiudad.getNomenclatura());
-                    arbol.insertar(nombre, nuevaCiudad);
-                    System.out.println("La nueva ciudad se añadió con éxito.");
                 } else {
                     System.out.println("Error: formato incorrecto.");
                 }
-            } else {
-                System.out.println("Error: formato incorrecto.");
-            }
-        } else {
-            System.out.println("Error: el nombre ingresado está repetido o es inválido.");
+            } while (!valido);
         }
+        // Se crea y agrega la ciudad a las estructuras
+        Ciudad nuevaCiudad = new Ciudad(nombre, nomenclatura, Double.parseDouble(superficie),
+                Double.parseDouble(promedio));
+        nuevaCiudad.insertarDatosAnio(habitantes);
+        mapa.insertarVertice(nuevaCiudad.getNomenclatura());
+        arbol.insertar(nombre, nuevaCiudad);
+        System.out.println("La nueva ciudad se añadió con éxito.");
         System.out.println("----------------------------------");
     }
 
@@ -268,26 +275,31 @@ public class TransporteDeAgua {
     }
 
     // Crea la nomenclatura de una ciudad
-    public static String crearNomenclatura(String n, DiccionarioAVL arbol, int[] cantNomenclaturas) {
+    public static String crearNomenclatura(String n, DiccionarioAVL arbol, int[] cantNomenclaturas,
+            Cola nomenclaturasLibres) {
         String nomenclatura = "";
         n = n.trim();
         int longi = (arbol.listarClaves()).longitud();
         if (n.contains(" ")) {
             nomenclatura = "" + n.charAt(0) + n.charAt((n.indexOf(' ') + 1));
             nomenclatura = nomenclatura.toUpperCase();
-            cantNomenclaturas[0]++;
-            nomenclatura = nomenclatura + (cantNomenclaturas[0]);
         } else {
             nomenclatura = "" + n.charAt(0) + n.charAt(1);
             nomenclatura = nomenclatura.toUpperCase();
+        }
+        if (nomenclaturasLibres.esVacia()) {
             cantNomenclaturas[0]++;
             nomenclatura = nomenclatura + (cantNomenclaturas[0]);
+        } else {
+            nomenclatura = nomenclatura + nomenclaturasLibres.obtenerFrente();
+            nomenclaturasLibres.sacar();
         }
         return nomenclatura;
     }
 
     // Elimina una ciudad del sistema
-    public static void eliminarCiudad(DiccionarioAVL arbol, Grafo mapa, int[] cantNomenclaturas) {
+    public static void eliminarCiudad(DiccionarioAVL arbol, Grafo mapa, int[] cantNomenclaturas,
+            Cola nomenclaturasLibres) {
         Scanner sc = new Scanner(System.in);
         System.out.println("----------------------------------");
         System.out.println("ELIMINAR UNA NUEVA CIUDAD");
@@ -300,8 +312,9 @@ public class TransporteDeAgua {
             }
             if (mapa.eliminarVertice(ciudadAEliminar.getNomenclatura())) {
                 System.out.println("Se eliminó la ciudad " + ciudadAEliminar.getNombre() + " correctamente");
+                int numNomen = Integer.parseInt(ciudadAEliminar.getNomenclatura().substring(2));
+                nomenclaturasLibres.poner(numNomen);
                 arbol.eliminar(ciudadAEliminar.getNombre());
-                cantNomenclaturas[0]--;
             } else {
                 System.out.println(
                         "ERROR: Nombre encontrado, pero ciudad NO encontrada, cargue nuevamente las ciudades");
@@ -335,9 +348,7 @@ public class TransporteDeAgua {
             }
             switch (menuModificacionCiudades()) {
                 case 1:
-                    arbol.eliminar(ciudadX.getNombre());
                     modificarNombreCiudad(ciudadX, arbol, mapa, hashTuberias);
-                    arbol.insertar(ciudadX.getNombre(), ciudadX);
                     break;
                 case 2:
                     modificarSuperficieCiudad(ciudadX);
@@ -383,13 +394,15 @@ public class TransporteDeAgua {
             String nombre = sc.nextLine().toUpperCase();
             boolean valido = verificarValidezNombreCiudad(nombre, arbol);
             while (!valido) {
-                System.out.println("Ingrese un nombre valido");
+                System.out.println("Error: Formato invalido o nombre repetido. Ingrese un nombre valido");
                 nombre = (sc.nextLine()).toUpperCase();
                 valido = verificarValidezNombreCiudad(nombre, arbol);
             }
             if (valido) {
+                arbol.eliminar(ciudadX.getNombre());
                 ciudadX.setNombre(nombre);
-                String nomenclaturaNueva = modificarNomenclatura(nombre, arbol);
+                arbol.insertar(nombre, ciudadX);
+                String nomenclaturaNueva = modificarNomenclatura(nombre, arbol, ciudadX.getNomenclatura());
                 encontrarYModificarTuberia(ciudadX.getNomenclatura(), nomenclaturaNueva, hashTuberias);
                 mapa.modificarVertice(ciudadX.getNomenclatura(), nomenclaturaNueva);
                 ciudadX.setNomenclatura(nomenclaturaNueva);
@@ -399,18 +412,19 @@ public class TransporteDeAgua {
         }
     }
 
-    public static String modificarNomenclatura(String n, DiccionarioAVL arbol) {
+    public static String modificarNomenclatura(String n, DiccionarioAVL arbol, String nomenclaturaOriginal) {
         String nomenclatura = "";
         n = n.trim();
         int longi = (arbol.listarClaves()).longitud();
         if (n.contains(" ")) {
             nomenclatura = "" + n.charAt(0) + n.charAt((n.indexOf(' ') + 1));
             nomenclatura = nomenclatura.toUpperCase();
-            nomenclatura = nomenclatura + n.substring(2);
+            nomenclatura = nomenclatura + nomenclaturaOriginal.substring(2);
         } else {
             nomenclatura = "" + n.charAt(0) + n.charAt(1);
             nomenclatura = nomenclatura.toUpperCase();
-            nomenclatura = nomenclatura + n.substring(2);;
+            nomenclatura = nomenclatura + nomenclaturaOriginal.substring(2);
+            ;
         }
         return nomenclatura;
     }
@@ -551,7 +565,8 @@ public class TransporteDeAgua {
                 System.out.println("Ingrese el estado (ACTIVO / EN REPARACIÓN / EN DISEÑO / INACTIVO): ");
                 estado = sc.nextLine().toUpperCase();
                 while (!verificarEstado(estado)) {
-                    System.out.println("Error: estado inválido. Ingrese el estado (ACTIVO / EN REPARACIÓN / EN DISEÑO / INACTIVO): ");
+                    System.out.println(
+                            "Error: estado inválido. Ingrese el estado (ACTIVO / EN REPARACIÓN / EN DISEÑO / INACTIVO): ");
                     estado = sc.nextLine().toUpperCase();
                 }
                 // Se crea y agrega la tubería a las estructuras
@@ -566,7 +581,7 @@ public class TransporteDeAgua {
                 System.out.println("Error: Caudal Máximo ya existente");
             }
         } else {
-            System.out.println("Error: la tubería con nomenclatura '" + nomen + "' ya existe.");
+            System.out.println("Error: Ya existe una tubería desde " + desde + " hasta " + hasta);
         }
     }
 
@@ -586,19 +601,19 @@ public class TransporteDeAgua {
             int caudal = tuberia.getCaudalMax();
             boolean hecho = mapa.eliminarArco(caudal);
             if (hecho) {
-                System.out.println("La tuberia '" + nomen + "' fue eliminada del mapa con éxito.");
+                System.out.print("La tuberia '" + nomen + "' fue eliminada del mapa ");
                 Object aux = hashTuberias.remove(dominio);
                 if (aux != null) {
-                    System.out.println("La tuberia '" + nomen + "' fue eliminada del hash con éxito.");
+                    System.out.println("y del hash con éxito.");
                 } else {
-                    System.out.println("La tuberia '" + nomen
-                            + "' NO fue eliminada del hash ya que no estaba cargada en el  mismo.");
+                    System.out.println(
+                            "con éxito. Sin embargo NO fue eliminada del hash ya que no estaba cargada en el  mismo.");
                 }
             } else {
                 System.out.println("Error: Tuberia encontrada pero contiene errores.");
             }
         } else {
-            System.out.println("Error: la nomenclatura es incorrecta o la tuberia no existe.");
+            System.out.println("Error: La tuberia no existe. Saliendo...");
         }
     }
 
@@ -612,13 +627,14 @@ public class TransporteDeAgua {
         Dom dominio = new Dom(partes[0], partes[1]);
         Tuberia tuberia = hashTuberias.get(dominio);
         if (tuberia != null) {
-            while (!accion.equals("5")) {
+            while (!accion.equals("6")) {
                 System.out.println("Ingrese que dato quiere modificar según su índice: ");
                 System.out.println("1. Caudal Mínimo");
                 System.out.println("2. Caudal Máximo");
                 System.out.println("3. Diametro");
                 System.out.println("4. Estado");
-                System.out.println("5. Salir al menu principal");
+                System.out.println("5. Modificar todo");
+                System.out.println("6. Salir al menu principal");
                 System.out.print("\nOpción elegida: ");
                 accion = sc.nextLine();
                 switch (accion) {
@@ -635,6 +651,12 @@ public class TransporteDeAgua {
                         modificarEstadoTuberia(tuberia, mapa);
                         break;
                     case "5":
+                        modificarCaudalTuberia(tuberia, mapa, "min");
+                        modificarCaudalTuberia(tuberia, mapa, "max");
+                        modificarDiametroTuberia(tuberia, mapa);
+                        modificarEstadoTuberia(tuberia, mapa);
+                        break;
+                    case "6":
                         System.out.println("Volviendo al menú principal...");
                         break;
                     default:
@@ -672,34 +694,27 @@ public class TransporteDeAgua {
         if (tipo.equals("min")) {
             System.out.println("Ingrese el nuevo caudal mínimo de la tubería " + tuberia.getNomenclatura());
             caudal = sc.nextLine();
-            if (esInt(caudal)) {
-                if (Integer.parseInt(caudal) > tuberia.getCaudalMax()) {
-                    System.out.println("Error: el caudal mínimo no puede ser mayor que el caudal máximo.");
-                } else {
-                    tuberia.setCaudalMin(Integer.parseInt(caudal));
-                    System.out.println("El caudal mínimo fue modificado correctamente.");
-                }
-            } else {
-                System.out.println("Error: formato incorrecto.");
+            while (!esInt(caudal) || Integer.parseInt(caudal) > tuberia.getCaudalMax()) {
+                System.out.println(
+                        "Error: formato incorrecto o caudal mayor al máximo. Vuelva a ingresar el caudal mínimo:");
+                caudal = sc.nextLine();
             }
+            tuberia.setCaudalMin(Integer.parseInt(caudal));
+            System.out.println("El caudal mínimo fue modificado correctamente.");
+
         } else if (tipo.equals("max")) {
             System.out.println("Ingrese el nuevo caudal máximo de la tubería " + tuberia.getNomenclatura());
             caudal = sc.nextLine();
-            while (!esInt(caudal)) {
-                System.out.println("Error: formato incorrecto. Vuelva a ingresar:");
+            while (!esInt(caudal) || Integer.parseInt(caudal) < tuberia.getCaudalMin()
+                    || mapa.existeArco(Integer.parseInt(caudal))) {
+                System.out.println(
+                        "Error: formato incorrecto, caudal menor al mínimo, o caudal máximo repetido. Vuelva a ingresar el caudal máximo:");
                 caudal = sc.nextLine();
+
             }
-            if (!mapa.existeArco(Integer.parseInt(caudal))) {
-                if (Integer.parseInt(caudal) < tuberia.getCaudalMin()) {
-                    System.out.println("Error: el caudal máximo no puede ser menor que el caudal mínimo.");
-                } else {
-                    tuberia.setCaudalMax(Integer.parseInt(caudal));
-                    mapa.modificarArco(tuberia.getCaudalMax(), Integer.parseInt(caudal));
-                    System.out.println("El caudal máximo fue modificado correctamente.");
-                }
-            } else {
-                System.out.println("Error: Caudal Maximo repetido");
-            }
+            tuberia.setCaudalMax(Integer.parseInt(caudal));
+            mapa.modificarArco(tuberia.getCaudalMax(), Integer.parseInt(caudal));
+            System.out.println("El caudal máximo fue modificado correctamente.");
         }
     }
 
@@ -707,12 +722,12 @@ public class TransporteDeAgua {
         Scanner sc = new Scanner(System.in);
         System.out.println("Ingrese el nuevo diámetro de la tubería " + tuberia.getNomenclatura());
         String diametro = sc.nextLine();
-        if (esInt(diametro) && Integer.parseInt(diametro) > 0) {
-            tuberia.setDiametro(Integer.parseInt(diametro));
-            System.out.println("El diámetro fue modificado correctamente.");
-        } else {
-            System.out.println("Error: formato incorrecto.");
+        while (!esInt(diametro) || Integer.parseInt(diametro) <= 0) {
+            System.out.println("Error: formato incorrecto o numero negativo. Vuelva a ingresar el diámetro:");
+            diametro = sc.nextLine();
         }
+        tuberia.setDiametro(Integer.parseInt(diametro));
+        System.out.println("El diámetro fue modificado correctamente.");
     }
 
     public static void modificarEstadoTuberia(Tuberia tuberia, Grafo mapa) {
@@ -720,12 +735,10 @@ public class TransporteDeAgua {
         System.out.println("Ingrese el nuevo estado de la tubería " + tuberia.getNomenclatura()
                 + " | OPCIONES: ACTIVO - EN REPARACION - EN DISEÑO - INACTIVO");
         String estado = sc.nextLine().toUpperCase();
-        if (estado.equals("ACTIVO") || estado.equals("EN REPARACION") || estado.equals("EN REPARACIÓN")
-                || estado.equals("EN DISEÑO") || estado.equals("INACTIVO")) {
-            tuberia.setEstado(estado);
-            System.out.println("El estado fue modificado correctamente.");
-        } else {
-            System.out.println("Error: estado inválido.");
+        while (!verificarEstado(estado)) {
+            System.out.println(
+                    "Error: estado inválido. Ingrese el estado (ACTIVO / EN REPARACIÓN / EN DISEÑO / INACTIVO): ");
+            estado = sc.nextLine().toUpperCase();
         }
     }
 
@@ -918,6 +931,51 @@ public class TransporteDeAgua {
                 case "DICIEMBRE":
                     out = 12;
                     break;
+            }
+        }
+        return out;
+    }
+
+    // Convierte el int a su mes correspondiente
+    public static String convertirIntAMes(int num) {
+        String out = "ERROR";
+        if (num >= 1 && num <= 12) {
+            switch (num) {
+                case 1:
+                    out = "ENERO";
+                    break;
+                case 2:
+                    out = "FEBRERO";
+                    break;
+                case 3:
+                    out = "MARZO";
+                    break;
+                case 4:
+                    out = "ABRIL";
+                    break;
+                case 5:
+                    out = "MAYO";
+                    break;
+                case 6:
+                    out = "JUNIO";
+                    break;
+                case 7:
+                    out = "JULIO";
+                    break;
+                case 8:
+                    out = "AGOSTO";
+                    break;
+                case 9:
+                    out = "SEPTIEMBRE";
+                    break;
+                case 10:
+                    out = "OCTUBRE";
+                    break;
+                case 11:
+                    out = "NOVIEMBRE";
+                    break;
+                case 12:
+                    out = "DICIEMBRE";
             }
         }
         return out;
@@ -1184,7 +1242,7 @@ public class TransporteDeAgua {
             System.out.println("1. Obtener el camino con caudal pleno minimo desde " + nombreA + " a " + nombreB);
             System.out.println(
                     "2. Obtener el camino de " + nombreA + " a " + nombreB
-                    + " pasando por la minima cantidad de ciudades");
+                            + " pasando por la minima cantidad de ciudades");
             System.out.println("3. Salir al menu principal");
             System.out.println("----------------------------------");
             String eleccion = sc.nextLine();
@@ -1237,7 +1295,7 @@ public class TransporteDeAgua {
             ciudadB = (Ciudad) arbol.obtenerDato(nombreB);
         }
         // Devuelve ambas ciudades en un arreglo
-        Ciudad[] AyB = {ciudadA, ciudadB};
+        Ciudad[] AyB = { ciudadA, ciudadB };
         return AyB;
     }
 
@@ -1490,52 +1548,54 @@ public class TransporteDeAgua {
 
 }
 
-    //MergeSort
-    // Algoritmo MergeSort para un arreglo de enteros
-    /*public static void mergeSort(int[] arr, int left, int right) {
-        if (left < right) {
-            int mid = (left + right) / 2;
-            mergeSort(arr, left, mid);
-            mergeSort(arr, mid + 1, right);
-            merge(arr, left, mid, right);
-        }
-    }
-
-    private static void merge(int[] arr, int left, int mid, int right) {
-        int n1 = mid - left + 1;
-        int n2 = right - mid;
-
-        int[] L = new int[n1];
-        int[] R = new int[n2];
-
-        for (int i = 0; i < n1; i++) {
-            L[i] = arr[left + i];
-        }
-        for (int j = 0; j < n2; j++) {
-            R[j] = arr[mid + 1 + j];
-        }
-
-        int i = 0, j = 0, k = left;
-        while (i < n1 && j < n2) {
-            if (L[i] <= R[j]) {
-                arr[k] = L[i];
-                i++;
-            } else {
-                arr[k] = R[j];
-                j++;
-            }
-            k++;
-        }
-
-        while (i < n1) {
-            arr[k] = L[i];
-            i++;
-            k++;
-        }
-        while (j < n2) {
-            arr[k] = R[j];
-            j++;
-            k++;
-        }
-    }
-}*/
+// MergeSort
+// Algoritmo MergeSort para un arreglo de enteros
+/*
+ * public static void mergeSort(int[] arr, int left, int right) {
+ * if (left < right) {
+ * int mid = (left + right) / 2;
+ * mergeSort(arr, left, mid);
+ * mergeSort(arr, mid + 1, right);
+ * merge(arr, left, mid, right);
+ * }
+ * }
+ * 
+ * private static void merge(int[] arr, int left, int mid, int right) {
+ * int n1 = mid - left + 1;
+ * int n2 = right - mid;
+ * 
+ * int[] L = new int[n1];
+ * int[] R = new int[n2];
+ * 
+ * for (int i = 0; i < n1; i++) {
+ * L[i] = arr[left + i];
+ * }
+ * for (int j = 0; j < n2; j++) {
+ * R[j] = arr[mid + 1 + j];
+ * }
+ * 
+ * int i = 0, j = 0, k = left;
+ * while (i < n1 && j < n2) {
+ * if (L[i] <= R[j]) {
+ * arr[k] = L[i];
+ * i++;
+ * } else {
+ * arr[k] = R[j];
+ * j++;
+ * }
+ * k++;
+ * }
+ * 
+ * while (i < n1) {
+ * arr[k] = L[i];
+ * i++;
+ * k++;
+ * }
+ * while (j < n2) {
+ * arr[k] = R[j];
+ * j++;
+ * k++;
+ * }
+ * }
+ * }
+ */

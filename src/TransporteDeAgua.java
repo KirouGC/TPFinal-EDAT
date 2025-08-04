@@ -29,7 +29,7 @@ public class TransporteDeAgua {
             FileReader lectorTuberia = new FileReader(TuberiaArchivoEntrada);
             BufferedReader bufferLecTuberia = new BufferedReader(lectorTuberia);
 
-            int[] numNomen = { 3000 };
+            int[] numNomen = {3000};
             Cola nomenclaturasLibres = new Cola();
             Grafo mapa = new Grafo();
             DiccionarioAVL arbolCiudades = new DiccionarioAVL();
@@ -1242,7 +1242,7 @@ public class TransporteDeAgua {
             System.out.println("1. Obtener el camino con caudal pleno minimo desde " + nombreA + " a " + nombreB);
             System.out.println(
                     "2. Obtener el camino de " + nombreA + " a " + nombreB
-                            + " pasando por la minima cantidad de ciudades");
+                    + " pasando por la minima cantidad de ciudades");
             System.out.println("3. Salir al menu principal");
             System.out.println("----------------------------------");
             String eleccion = sc.nextLine();
@@ -1295,7 +1295,7 @@ public class TransporteDeAgua {
             ciudadB = (Ciudad) arbol.obtenerDato(nombreB);
         }
         // Devuelve ambas ciudades en un arreglo
-        Ciudad[] AyB = { ciudadA, ciudadB };
+        Ciudad[] AyB = {ciudadA, ciudadB};
         return AyB;
     }
 
@@ -1342,11 +1342,11 @@ public class TransporteDeAgua {
             int diametroMin = hashX.get(dominio).getDiametro();
             for (int i = 1; i <= longi; i++) {
                 aux = (Lista) caminosPosibles.recuperar(i);
-                dominio.setNom1((String) aux.recuperar(1));
-                dominio.setNom2((String) aux.recuperar(2));
-                diametroMin = hashX.get(dominio).getDiametro();
-                caudalPlenoActual = 0;
                 if (aux != null) {
+                    dominio.setNom1((String) aux.recuperar(1));
+                    dominio.setNom2((String) aux.recuperar(2));
+                    diametroMin = hashX.get(dominio).getDiametro();
+                    caudalPlenoActual = 0;
                     for (int g = 1; g < aux.longitud(); g++) {
                         dominio.setNom1((String) aux.recuperar(g));
                         dominio.setNom2((String) aux.recuperar(g + 1));
@@ -1375,7 +1375,7 @@ public class TransporteDeAgua {
             // Obtiene y muestra el estado del camino
             Lista estadoTuberias = obtenerListaEstadosTuberias(caminoMinimo, hashX);
             String estadoCamino = decidirEstadoCamino(estadoTuberias);
-            if (estadoCamino != "ERROR") {
+            if (!estadoCamino.equals("ERROR")) {
                 System.out.println("El camino mas corto desde " + ciudadA.getNombre() + " hasta " + ciudadB.getNombre()
                         + " es el siguiente:");
                 System.out.println(caminoMinimo.toString());
@@ -1548,59 +1548,7 @@ public class TransporteDeAgua {
                 }
             }
         }
-        return resultado; // Un solo return al final del método
+        return resultado;
     }
 
 }
-
-// MergeSort
-// Algoritmo MergeSort para un arreglo de enteros
-/*
- * public static void mergeSort(int[] arr, int left, int right) {
- * if (left < right) {
- * int mid = (left + right) / 2;
- * mergeSort(arr, left, mid);
- * mergeSort(arr, mid + 1, right);
- * merge(arr, left, mid, right);
- * }
- * }
- * 
- * private static void merge(int[] arr, int left, int mid, int right) {
- * int n1 = mid - left + 1;
- * int n2 = right - mid;
- * 
- * int[] L = new int[n1];
- * int[] R = new int[n2];
- * 
- * for (int i = 0; i < n1; i++) {
- * L[i] = arr[left + i];
- * }
- * for (int j = 0; j < n2; j++) {
- * R[j] = arr[mid + 1 + j];
- * }
- * 
- * int i = 0, j = 0, k = left;
- * while (i < n1 && j < n2) {
- * if (L[i] <= R[j]) {
- * arr[k] = L[i];
- * i++;
- * } else {
- * arr[k] = R[j];
- * j++;
- * }
- * k++;
- * }
- * 
- * while (i < n1) {
- * arr[k] = L[i];
- * i++;
- * k++;
- * }
- * while (j < n2) {
- * arr[k] = R[j];
- * j++;
- * k++;
- * }
- * }
- * }
- */

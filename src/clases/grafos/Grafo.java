@@ -243,7 +243,6 @@ public class Grafo {
     }
 
     private void caminoMasCortoAux(NodoVert actual, Object destino, Lista visitados, Lista mejorCamino) {
-        //System.out.println("chau");
         visitados.insertar(actual.getElem(), visitados.longitud() + 1);
         
         //Si el nodo actual es el destino

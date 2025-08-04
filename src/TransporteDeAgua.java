@@ -1,8 +1,8 @@
 
 import clases.especifico.DiccionarioAVL;
 import clases.grafos.Grafo;
-import clases.lineales.dinamicas.Lista;
 import clases.lineales.dinamicas.Cola;
+import clases.lineales.dinamicas.Lista;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -1337,21 +1337,26 @@ public class TransporteDeAgua {
             Lista aux = (Lista) caminosPosibles.recuperar(1);
             int longi = caminosPosibles.longitud();
             Dom dominio = new Dom((String) aux.recuperar(1), (String) aux.recuperar(2));
-            int caudalPlenoMin = hashX.get(dominio).getCaudalMax();
+            int caudalPlenoMin = 0;
             int caudalPlenoActual = 0;
             int diametroMin = hashX.get(dominio).getDiametro();
             for (int i = 1; i <= longi; i++) {
                 aux = (Lista) caminosPosibles.recuperar(i);
+                dominio.setNom1((String) aux.recuperar(1));
+                dominio.setNom2((String) aux.recuperar(2));
+                diametroMin = hashX.get(dominio).getDiametro();
+                caudalPlenoActual = 0;
                 if (aux != null) {
                     for (int g = 1; g < aux.longitud(); g++) {
                         dominio.setNom1((String) aux.recuperar(g));
                         dominio.setNom2((String) aux.recuperar(g + 1));
-                        if (hashX.get(dominio).getDiametro() < diametroMin && !out.equals(aux)) {
+                        if (hashX.get(dominio).getDiametro() <= diametroMin && !out.equals(aux)) {
                             diametroMin = hashX.get(dominio).getDiametro();
                             caudalPlenoActual = hashX.get(dominio).getCaudalMax();
                         }
                     }
-                    if (caudalPlenoActual < caudalPlenoMin) {
+                    if (caudalPlenoActual < caudalPlenoMin || i == 1) {
+                        caudalPlenoMin = caudalPlenoActual;
                         out = aux;
                     }
                 }

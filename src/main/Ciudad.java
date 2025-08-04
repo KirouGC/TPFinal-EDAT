@@ -142,8 +142,8 @@ public class Ciudad {
                 }
                 if(anios.recuperar(anio) != null){
                     System.out.println("Año cargado previamente - Sobreescribiendo datos...");
-                    anios.eliminar(anio);
                 }
+                anios.eliminar(anio);
                 if (anios.insertar(habitantesMensual, anio))
                     resultado = "Habitantes insertados correctamente";
                 else

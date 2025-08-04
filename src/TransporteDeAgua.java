@@ -309,7 +309,7 @@ public class TransporteDeAgua {
             Ciudad ciudadAEliminar = (Ciudad) arbol.obtenerDato(eleccion);
             if (ciudadAEliminar == null) {
                 ciudadAEliminar = ciudadNoEncontrada(arbol, ciudadAEliminar, sc);
-            } 
+            }
             if (mapa.existeVertice(ciudadAEliminar.getNomenclatura())) {
                 Lista listaX = mapa.listarVerticeYArcos((String) ciudadAEliminar.getNomenclatura());
                 //Se eliminan las tuberias con algun extremo en esta ciudad
@@ -333,7 +333,7 @@ public class TransporteDeAgua {
         Object[] nombre;
         Dom dominioX = new Dom();
         for (int i = 1; i <= longi; i++) {
-            nombre = (Object[])listaX.recuperar(i);
+            nombre = (Object[]) listaX.recuperar(i);
             dominioX.setNom1((String) nombre[0]);
             dominioX.setNom2((String) nombre[1]);
             if (hashTuberias.containsKey(dominioX)) {
@@ -379,9 +379,7 @@ public class TransporteDeAgua {
                     modificarPromedioConsCiudad(ciudadX);
                     break;
                 case 4:
-                    arbol.eliminar(ciudadX.getNombre());
                     modificarNombreCiudad(ciudadX, arbol, mapa, hashTuberias);
-                    arbol.insertar(ciudadX.getNombre(), ciudadX);
                     modificarSuperficieCiudad(ciudadX);
                     modificarPromedioConsCiudad(ciudadX);
                     break;
@@ -425,7 +423,8 @@ public class TransporteDeAgua {
                 ciudadX.setNombre(nombre);
                 arbol.insertar(nombre, ciudadX);
                 String nomenclaturaNueva = modificarNomenclatura(nombre, arbol, ciudadX.getNomenclatura());
-                encontrarYModificarTuberia(ciudadX.getNomenclatura(), nomenclaturaNueva, hashTuberias);
+                Lista listaNomenclaturas = mapa.listarVerticeYArcos(ciudadX.getNomenclatura());
+                encontrarYModificarTuberia(ciudadX.getNomenclatura(), nomenclaturaNueva, hashTuberias, listaNomenclaturas);
                 mapa.modificarVertice(ciudadX.getNomenclatura(), nomenclaturaNueva);
                 ciudadX.setNomenclatura(nomenclaturaNueva);
                 System.out.println("El nombre (y nomenclatura) de la ciudad fue modificada correctamente");
@@ -451,28 +450,42 @@ public class TransporteDeAgua {
         return nomenclatura;
     }
 
-    public static void encontrarYModificarTuberia(String nomenclaturaVieja, String nomenclaturaNueva,
-            HashMap<Dom, Tuberia> hashTuberias) {
-        ArrayList<Dom> claves = new ArrayList<>(hashTuberias.keySet());
-        for (int i = 0; i < hashTuberias.size(); i++) {
-            // Recorro todas las claves del hashmap
-            Dom clave = claves.get(i);
-            String nomenclaturaTuberia = "";
-            // Si la clave coincide con la nomenclatura vieja, modifico la clave
-            if (clave.getNom1().equals(nomenclaturaVieja)) {
-                Tuberia aux = hashTuberias.get(clave);
-                nomenclaturaTuberia = nomenclaturaNueva + "-" + clave.getNom2();
-                aux.setNomenclatura(nomenclaturaTuberia);
-                hashTuberias.remove(clave);
-                clave.setNom1(nomenclaturaNueva);
-                hashTuberias.put(clave, aux);
-            } else if (clave.getNom2().equals(nomenclaturaVieja)) {
-                Tuberia aux = hashTuberias.get(clave);
-                nomenclaturaTuberia = clave.getNom1() + "-" + nomenclaturaNueva;
-                aux.setNomenclatura(nomenclaturaTuberia);
-                hashTuberias.remove(clave);
-                clave.setNom2(nomenclaturaNueva);
-                hashTuberias.put(clave, aux);
+    public static void encontrarYModificarTuberia(String nomenclaturaVieja, String nomenclaturaNueva, HashMap<Dom, Tuberia> hashTuberias, Lista listaX) {
+        int longitud = listaX.longitud();
+        Object[] nombre;
+        Tuberia tuberiaX;
+        String nom;
+
+        for (int i = 1; i <= longitud; i++) {
+            nombre = (Object[]) listaX.recuperar(i);
+            Dom domOriginal;
+            Dom domNuevo;
+            if (nombre[0].equals(nomenclaturaVieja)) {
+                nom = nomenclaturaNueva + "-" + nombre[1];
+                domOriginal = new Dom(nomenclaturaVieja, (String) nombre[1]);
+                tuberiaX = hashTuberias.get(domOriginal);
+                if (tuberiaX != null) {
+                    hashTuberias.remove(domOriginal);
+                    tuberiaX.setNomenclatura(nom);
+                    domNuevo = new Dom(nomenclaturaNueva, (String) nombre[1]);
+                    hashTuberias.put(domNuevo, tuberiaX);
+                } else {
+                    System.out.println("No se encontró la tubería: " + domOriginal.getNom1() + "-" + domOriginal.getNom2());
+                }
+            } else if (nombre[1].equals(nomenclaturaVieja)) {
+                nom = nombre[0] + "-" + nomenclaturaNueva;
+                domOriginal = new Dom((String) nombre[0], nomenclaturaVieja);
+                tuberiaX = hashTuberias.get(domOriginal);
+                if (tuberiaX != null) {
+                    hashTuberias.remove(domOriginal);
+                    tuberiaX.setNomenclatura(nom);
+                    domNuevo = new Dom((String) nombre[0], nomenclaturaNueva);
+                    hashTuberias.put(domNuevo, tuberiaX);
+                } else {
+                    System.out.println("No se encontró la tubería: " + domOriginal.getNom1() + "-" + domOriginal.getNom2());
+                }
+            } else {
+                System.out.println("No coincide ninguna nomenclatura vieja en la tubería: " + nombre[0] + "-" + nombre[1]);
             }
         }
     }
@@ -764,16 +777,6 @@ public class TransporteDeAgua {
         }
     }
 
-    // Verifica si el nombre existe en el diccionario de ciudades
-    public static boolean verificarNombreDiccionario(String n, DiccionarioAVL arbol) {
-        boolean valida = false;
-        Ciudad ciudad = (Ciudad) arbol.obtenerDato(n);
-        if (ciudad != null) {
-            valida = true;
-        }
-        return valida;
-    }
-
     // Verifica si un string puede convertirse a int
     public static boolean esInt(String n) {
         boolean esInt = true;
@@ -894,7 +897,7 @@ public class TransporteDeAgua {
         return valido;
     }
 
-    // Convierte un string de año a su índice interno (ej: 2016 -> 1)
+    // Convierte un string de año a su índice interno (ej: 2025 -> 1)
     public static int convertirAnio(String anio) {
         int out = -1;
         if (anio.length() > 0) {
@@ -998,6 +1001,7 @@ public class TransporteDeAgua {
                     break;
                 case 12:
                     out = "DICIEMBRE";
+                    break;
             }
         }
         return out;
@@ -1007,95 +1011,92 @@ public class TransporteDeAgua {
     public static void consultarCiudadSegundaOpcion(DiccionarioAVL arbol) {
         Scanner sc = new Scanner(System.in);
         System.out.println("Ingrese el nombre minimo de las ciudades que desea consultar");
-        Lista claves = arbol.listarClaves();
         String minNom = (sc.nextLine()).toUpperCase();
-        if (claves.recuperar(claves.longitud()).equals(minNom)) {
-            System.out.println("Error: Se inserto el maximo nombre registrado como minimo, saliendo...");
-        } else {
-            // Valida nombre mínimo
-            while (arbol.obtenerDato(minNom) == null) {
-                System.out.println("Error: Nombre no encontrado, ingrese nuevamente");
-                minNom = (sc.nextLine()).toUpperCase();
-            }
-            // Solicita y valida nombre máximo
-            System.out.println("Ingrese el nombre maximo de las ciudades que desea consultar");
-            String maxNom = (sc.nextLine()).toUpperCase();
-            boolean maxNomValido = false;
-            if (arbol.obtenerDato(maxNom) == null || maxNom.compareTo(minNom) < 0) {
-                while (!maxNomValido) {
-                    if (arbol.obtenerDato(maxNom) == null) {
-                        System.out.println("Error: Nombre no encontrado, ingrese nuevamente");
-                        maxNom = (sc.nextLine()).toUpperCase();
-                    } else if (maxNom.compareTo(minNom) < 0) {
-                        System.out.println("Error: Ingrese un nombre maximo mayor al nombre minimo");
-                        maxNom = (sc.nextLine()).toUpperCase();
-                    } else {
-                        maxNomValido = true;
-                    }
-                }
-            }
-            // Solicita y valida volumen mínimo y máximo
-            System.out.println("Ingrese el volumen de agua minimo de las ciudades que desea consultar");
-            String StringMinVol = sc.nextLine();
-            Double minVol;
-            while (!esDouble(StringMinVol)) {
-                System.out.println("Error: Ingrese un volumen minimo valido");
-                StringMinVol = sc.nextLine();
-            }
-            minVol = Double.parseDouble(StringMinVol);
-            System.out.println("Ingrese el volumen de agua maximo de las ciudades que desea consultar");
-            String StringMaxVol = sc.nextLine();
-            Double maxVol = -1.0;
-            while (maxVol == -1.0) {
-                if (!esDouble(StringMaxVol)) {
-                    System.out.println("Error: Ingrese un volumen maximo valido");
-                    StringMaxVol = sc.nextLine();
+        int longitud = arbol.listarClaves().longitud();
+        Object ultimaClave = arbol.listarClaves().recuperar(longitud);
+        while (ultimaClave.equals(minNom) || arbol.obtenerDato(minNom) == null) {
+            System.out.println("Error: Se insertó un nombre inválido o el maximo nombre registrado como minimo. Ingrese un nombre valido");
+            minNom = (sc.nextLine()).toUpperCase();
+        }
+        // Solicita y valida nombre máximo
+        System.out.println("Ingrese el nombre maximo de las ciudades que desea consultar");
+        String maxNom = (sc.nextLine()).toUpperCase();
+        boolean maxNomValido = false;
+        if (arbol.obtenerDato(maxNom) == null || maxNom.compareTo(minNom) < 0) {
+            while (!maxNomValido) {
+                if (arbol.obtenerDato(maxNom) == null) {
+                    System.out.println("Error: Nombre no encontrado, ingrese nuevamente");
+                    maxNom = (sc.nextLine()).toUpperCase();
+                } else if (maxNom.compareTo(minNom) < 0) {
+                    System.out.println("Error: Ingrese un nombre maximo mayor al nombre minimo");
+                    maxNom = (sc.nextLine()).toUpperCase();
                 } else {
-                    maxVol = Double.parseDouble(StringMaxVol);
-                    if (maxVol < minVol) {
-                        maxVol = -1.0;
-                        StringMaxVol = "ERROR";
-                    }
+                    maxNomValido = true;
                 }
-            }
-            // Solicita año y mes
-            System.out.println("Ingrese el año donde quiere revisar el registro");
-            String StringAnio = sc.nextLine();
-            int anio = convertirAnio(StringAnio);
-            while (anio == -1) {
-                System.out.println("Año invalido, ingrese nuevamente");
-                StringAnio = sc.nextLine();
-                anio = convertirAnio(StringAnio);
-            }
-            System.out.println("Ingrese el mes donde quiere revisar el registro");
-            String StringMes = sc.nextLine();
-            int mes = convertirMesAInt(StringMes);
-            while (mes == -1) {
-                System.out.println("Mes invalido, ingrese nuevamente");
-                StringMes = sc.nextLine();
-                mes = convertirMesAInt(StringMes);
-            }
-            // Obtiene ciudades en el rango de nombres y volumen
-            Lista listaRango = obtenerCiudadesEntreNombres(arbol.listarDatos(), minNom, maxNom);
-            if (!listaRango.esVacia()) {
-                Lista listaFinal = obtenerCiudadesEntrePromedios(listaRango, anio, mes, minVol, maxVol);
-                if (listaFinal.esVacia()) {
-                    System.out.println("No se registró ninguna ciudad con los datos dados");
-                } else {
-                    // Muestra las ciudades encontradas
-                    System.out.println("Las ciudades las cuales están entre " + minNom + " y " + maxNom + ",");
-                    System.out.println("ademas de tener un promedio entre " + minVol + " y " + maxVol + ",");
-                    System.out.println("en el año " + StringAnio + " y mes " + (StringMes.toUpperCase()) + " son: ");
-                    Ciudad ciudadX = null;
-                    for (int i = 1; i <= listaFinal.longitud(); i++) {
-                        ciudadX = (Ciudad) listaFinal.recuperar(i);
-                        System.out.println(ciudadX.getNombre());
-                    }
-                }
-            } else {
-                System.out.println("No se registró ninguna ciudad con los datos dados");
             }
         }
+        // Solicita y valida volumen mínimo y máximo
+        System.out.println("Ingrese el volumen de agua minimo de las ciudades que desea consultar");
+        String StringMinVol = sc.nextLine();
+        Double minVol;
+        while (!esDouble(StringMinVol)) {
+            System.out.println("Error: Ingrese un volumen minimo valido");
+            StringMinVol = sc.nextLine();
+        }
+        minVol = Double.parseDouble(StringMinVol);
+        System.out.println("Ingrese el volumen de agua maximo de las ciudades que desea consultar");
+        String StringMaxVol = sc.nextLine();
+        Double maxVol = -1.0;
+        while (maxVol == -1.0) {
+            if (!esDouble(StringMaxVol)) {
+                System.out.println("Error: Ingrese un volumen maximo valido");
+                StringMaxVol = sc.nextLine();
+            } else {
+                maxVol = Double.parseDouble(StringMaxVol);
+                if (maxVol < minVol) {
+                    maxVol = -1.0;
+                    StringMaxVol = "ERROR";
+                }
+            }
+        }
+        // Solicita año y mes
+        System.out.println("Ingrese el año donde quiere revisar el registro");
+        String StringAnio = sc.nextLine();
+        int anio = convertirAnio(StringAnio);
+        while (anio == -1) {
+            System.out.println("Año invalido, ingrese nuevamente");
+            StringAnio = sc.nextLine();
+            anio = convertirAnio(StringAnio);
+        }
+        System.out.println("Ingrese el mes donde quiere revisar el registro");
+        String StringMes = sc.nextLine();
+        int mes = convertirMesAInt(StringMes);
+        while (mes == -1) {
+            System.out.println("Mes invalido, ingrese nuevamente");
+            StringMes = sc.nextLine();
+            mes = convertirMesAInt(StringMes);
+        }
+        // Obtiene ciudades en el rango de nombres y volumen
+        Lista listaRango = obtenerCiudadesEntreNombres(arbol.listarDatos(), minNom, maxNom);
+        if (!listaRango.esVacia()) {
+            Lista listaFinal = obtenerCiudadesEntrePromedios(listaRango, anio, mes, minVol, maxVol);
+            if (listaFinal.esVacia()) {
+                System.out.println("No se registró ninguna ciudad con los datos dados");
+            } else {
+                // Muestra las ciudades encontradas
+                System.out.println("Las ciudades las cuales están entre " + minNom + " y " + maxNom + ",");
+                System.out.println("ademas de tener un promedio entre " + minVol + " y " + maxVol + ",");
+                System.out.println("en el año " + StringAnio + " y mes " + (StringMes.toUpperCase()) + " son: ");
+                Ciudad ciudadX = null;
+                for (int i = 1; i <= listaFinal.longitud(); i++) {
+                    ciudadX = (Ciudad) listaFinal.recuperar(i);
+                    System.out.println(ciudadX.getNombre());
+                }
+            }
+        } else {
+            System.out.println("No se registró ninguna ciudad con los datos dados");
+        }
+
     }
 
     // Devuelve una lista de ciudades cuyos nombres están entre minNom y maxNom
@@ -1124,14 +1125,15 @@ public class TransporteDeAgua {
 
     // Devuelve una lista de ciudades cuyo promedio de consumo está entre minVol y
     // maxVol
-    public static Lista obtenerCiudadesEntrePromedios(Lista listaCiudades, int anio, int mes, Double minVol,
-            Double maxVol) {
+    public static Lista obtenerCiudadesEntrePromedios(Lista listaCiudades, int anio, int mes, Double minVol, Double maxVol) {
         Lista listaPromedioCiudades = new Lista();
         int i = 1;
         int h = 1;
         Ciudad aux = null;
         Double promedio = -1.0;
-        while (i <= listaCiudades.longitud()) {
+        int longitud = listaCiudades.longitud();
+
+        while (i <= longitud) {
             aux = (Ciudad) listaCiudades.recuperar(i);
             if (aux != null) {
                 promedio = aux.calcularPromedioVolumenMes(anio, mes);
@@ -1225,7 +1227,7 @@ public class TransporteDeAgua {
 
         for (int i = 0; i < 12; i++) {
             do {
-                System.out.println("Ingrese la cantidad de habitantes del mes " + (i + 1) + ": ");
+                System.out.println("Ingrese la cantidad de habitantes del mes " + convertirIntAMes(i+1) + ": ");
                 eleccion = sc.nextLine();
                 valido = esInt(eleccion);
                 if (valido) {

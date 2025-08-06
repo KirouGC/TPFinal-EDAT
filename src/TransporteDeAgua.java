@@ -43,14 +43,6 @@ public class TransporteDeAgua {
                 cargarTuberia(linea, mapa, hashTuberias, arbolCiudades);
             }
 
-            // TESTING
-            // Lista listaTest = arbolCiudades.listarRango("OOOO", "TTTT");
-            // for (int i = 0; i < listaTest.longitud(); i++) {
-            // System.out.println(((Ciudad) listaTest.recuperar(i+1)).getNombre());
-            // }
-            // System.out.println(arbolCiudades.eliminar("RIO GALLEGOS"));
-            // FIN TESTING
-            // Bucle principal del menú
             boolean volverMenu = false;
             do {
                 menu();

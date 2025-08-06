@@ -216,6 +216,35 @@ public class Lista {
         return texto;
     }
 
+    //ToString secundario para listas que contienen arrays (necesario para el grafo)
+    public String toStringSecundario() {
+        String texto = "[";
+        Nodo aux = cabecera;
+        while (aux != null) {
+            Object elem = aux.getElem();
+            if (elem != null && elem.getClass().isArray()) {
+                texto += arrayToString((Object[]) elem);
+            } else {
+                texto += elem;
+            }
+            aux = aux.getEnlace();
+            if (aux != null)
+                texto += ",";
+        }
+        texto += "]";
+        return texto;
+    }
+
+    private String arrayToString(Object[] arr) {
+        StringBuilder sb = new StringBuilder("(");
+        for (int i = 0; i < arr.length; i++) {
+            sb.append(arr[i]);
+            if (i < arr.length - 1) sb.append(",");
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
     // Propias del Tipo
 
     public Lista invertirLista(){

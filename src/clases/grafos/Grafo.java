@@ -84,43 +84,55 @@ public class Grafo {
         return existe;
     }
 
-    public boolean eliminarVertice(Object buscado) {
+   public boolean eliminarVertice(Object buscado) {
         boolean exito = false;
         if (inicio != null) {
+            // Caso especial: el vértice a eliminar es el primero
             if (inicio.getElem().equals(buscado)) {
+                NodoVert eliminado = inicio;
                 this.inicio = inicio.getSigVertice();
-                if (inicio != null) {
-                    NodoVert aux = this.inicio;
-                    while (aux != null) {
-                        this.eliminarArcos(aux.getPrimerAdy(), buscado);
-                        if (aux.getPrimerAdy() != null && aux.getPrimerAdy().getVertice().getElem().equals(buscado)) {
-                            aux.setPrimerAdy(aux.getPrimerAdy().getSigAdyacente());
-                        }
-                        aux = aux.getSigVertice();
-                    }
-                }
-                exito = true;
-            } else {
+                // Eliminar arcos que apunten al vértice eliminado
                 NodoVert aux = this.inicio;
-                NodoVert auxSiguiente = aux.getSigVertice();
                 while (aux != null) {
-                    if (auxSiguiente != null && auxSiguiente.getElem().equals(buscado)) {
-                        aux.setSigVertice(auxSiguiente.getSigVertice());
-                    }
                     this.eliminarArcos(aux.getPrimerAdy(), buscado);
                     if (aux.getPrimerAdy() != null && aux.getPrimerAdy().getVertice().getElem().equals(buscado)) {
                         aux.setPrimerAdy(aux.getPrimerAdy().getSigAdyacente());
                     }
                     aux = aux.getSigVertice();
-                    if (aux != null) {
-                        auxSiguiente = aux.getSigVertice();
-                    }
                 }
                 exito = true;
+            } else {
+                NodoVert aux = this.inicio;
+                NodoVert auxSiguiente = aux.getSigVertice();
+                boolean encontrado = false;
+                while (aux != null && auxSiguiente != null && !encontrado) {
+                    if (auxSiguiente.getElem().equals(buscado)) {
+                        // Eliminar el vértice de la lista
+                        aux.setSigVertice(auxSiguiente.getSigVertice());
+                        encontrado = true;
+                    } else {
+                        aux = aux.getSigVertice();
+                        if (aux != null) {
+                            auxSiguiente = aux.getSigVertice();
+                        }
+                    }
+                }
+                // Si se eliminó el vértice, eliminar arcos que apunten a él
+                if (encontrado) {
+                    NodoVert iter = this.inicio;
+                    while (iter != null) {
+                        this.eliminarArcos(iter.getPrimerAdy(), buscado);
+                        if (iter.getPrimerAdy() != null && iter.getPrimerAdy().getVertice().getElem().equals(buscado)) {
+                            iter.setPrimerAdy(iter.getPrimerAdy().getSigAdyacente());
+                        }
+                        iter = iter.getSigVertice();
+                    }
+                    exito = true;
+                }
             }
         }
         return exito;
-    }
+   }
 
     private void eliminarArcos(NodoAdy inicio, Object buscado) {
         if (inicio != null) {
@@ -489,7 +501,6 @@ public class Grafo {
         NodoAdy auxAdy = this.inicio.getPrimerAdy();
         while(aux != null){
             auxAdy = aux.getPrimerAdy();
-            System.out.println("entre2");
             while(auxAdy != null){
                 if(auxAdy.getVertice().getElem().equals(elem)){
                     Object [] destinos = new Object[2];
@@ -508,6 +519,6 @@ public class Grafo {
             }
             aux = aux.getSigVertice();
         }
-    return listaArcos;
+        return listaArcos;
     }
 }

@@ -175,6 +175,10 @@ public class DiccionarioAVL {
         return n;
     }
 
+    public void vaciar() {
+        this.raiz = null;
+    }
+
     public Comparable minimoClave() {
         NodoAVLDicc nodo = buscarMenorNodo(this.raiz);
         return (nodo != null) ? nodo.getClave() : null;
@@ -243,10 +247,8 @@ public class DiccionarioAVL {
         Lista listaRango = new Lista();
         int comparacion = (elemMinimo).compareTo(elemMaximo);
         if (comparacion < 0) {
-            System.out.println("entre");
             listarRangoRec(listaRango, this.raiz, elemMinimo, elemMaximo);
         }
-        System.out.println("fin");
         return listaRango;
     }
 
@@ -255,13 +257,10 @@ public class DiccionarioAVL {
             Comparable compararElem = n.getClave();
             int comparacionMin = compararElem.compareTo(min);
             int comparacionMax = compararElem.compareTo(max);
-            System.out.println("Valor comparacionMin en nodo:" + n.getClave() + " = " + comparacionMin);
-            System.out.println("Valor comparacionMax en nodo:" + n.getClave() + " = " + comparacionMax);
             if (n.getIzquierdo() != null && comparacionMin >= 0) {
                 listarRangoRec(l, n.getIzquierdo(), min, max);
             }
             if (comparacionMin >= 0 && comparacionMax <= 0) {
-                System.out.println("insertado");
                 l.insertar(n.getDato(), l.longitud() + 1);
             }
             if (n.getDerecho() != null && comparacionMax <= 0) {
